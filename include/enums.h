@@ -14,6 +14,14 @@ enum ENCODER_MODES {
   SET_INTENSITY
 };
 
+// Connection FSM operational states
+enum CONNECTION_STATE {
+  STATE_CHECK_WIFI_CONNECTION,
+  STATE_WIFI_CONNECT,
+  STATE_CHECK_INTERNET_CONNECTION,
+  STATE_INTERNET_CONNECTED
+};
+
 //  Mode operational states
 // const long TOTAL_OPERATION_MODES = 3;
 

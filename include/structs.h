@@ -25,20 +25,52 @@ struct digitalInput{
 };
 
 
-struct ChaserAnimationState{
-    RgbColor StartingColor;
-    RgbColor EndingColor;
-    uint16_t IndexPixel; // which pixel this animation is effecting
-};
+#ifdef WS2812B
+    struct ChaserAnimationState{
+        RgbColor StartingColor;
+        RgbColor EndingColor;
+        uint16_t IndexPixel; // which pixel this animation is effecting
+    };
+#endif
 
-struct SlowPanelsAnimationState{
-    RgbColor StartingColor;
-    RgbColor EndingColor;
-};
+#ifdef SK6812
+    struct ChaserAnimationState{
+        RgbwColor StartingColor;
+        RgbwColor EndingColor;
+        uint16_t IndexPixel; // which pixel this animation is effecting
+    };
+#endif
 
-struct FastSegmentsAnimationState{
-    RgbColor StartingColor;
-    RgbColor EndingColor;
-    uint16_t Segment;
-    bool dir;
-};
+#ifdef WS2812B
+    struct SlowPanelsAnimationState{
+        RgbColor StartingColor;
+        RgbColor EndingColor;
+    };
+#endif
+
+#ifdef SK6812
+    struct SlowPanelsAnimationState{
+        RgbwColor StartingColor;
+        RgbwColor EndingColor;
+    };
+#endif
+
+
+#ifdef WS2812B
+    struct FastSegmentsAnimationState{
+        RgbColor StartingColor;
+        RgbColor EndingColor;
+        uint16_t Segment;
+        bool dir;
+    };
+#endif
+
+#ifdef SK6812
+    struct FastSegmentsAnimationState{
+        RgbwColor StartingColor;
+        RgbwColor EndingColor;
+        uint16_t Segment;
+        bool dir;
+    };
+#endif
+

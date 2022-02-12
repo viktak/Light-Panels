@@ -18,7 +18,16 @@
 #define CONNECTION_STATUS_LED_GPIO 0
 #define MODE_BUTTON_GPIO 2
 
-#define DEFAULT_HEARTBEAT_INTERVAL 300
+#define DEFAULT_TIMEZONE                        2
+
+#define WIFI_CONNECTION_TIMEOUT                 10
+#define NTP_REFRESH_INTERVAL 3600
+
+#define DEFAULT_MQTT_SERVER                     "test.mosquitto.org"
+#define DEFAULT_MQTT_PORT                       1883
+#define DEFAULT_MQTT_TOPIC                      "vnode"
+
+#define DEFAULT_HEARTBEAT_INTERVAL              300 //  seconds
 
 #define NUMBER_OF_PANELS 6
 #define SEGMENTS_PER_PANEL 3

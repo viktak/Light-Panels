@@ -1,4 +1,8 @@
 #define __debugSettings
+
+//  Pick one: WS2812B, SK6812
+#define SK6812
+
 #include "includes.h"
 
 
@@ -30,7 +34,13 @@ const uint16_t NextPixelMoveDuration = 2000 / PixelCount; // how fast we move th
 
 NeoGamma<NeoGammaTableMethod> colorGamma; // for any fade animations, best to correct gamma
 
-NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
+#ifdef WS2812B
+    NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
+#endif
+#ifdef SK6812
+    NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(PixelCount);
+#endif
+
 
 NeoPixelAnimator animations(AnimCount); // NeoPixel animation management object
 
@@ -88,20 +98,30 @@ void SetRandomSeed(){
     randomSeed(seed);
 }
 
-
-
 void FadeOutAnimUpdate(const AnimationParam& param){
     // this gets called for each animation on every time step
     // progress will start at 0.0 and end at 1.0
     // we use the blend function on the RgbColor to mix
     // color based on the progress given to us in the animation
-    RgbColor updatedColor = RgbColor::LinearBlend(
-        chaserAnimationState[param.index].StartingColor,
-        chaserAnimationState[param.index].EndingColor,
-        param.progress);
-    // apply the color to the strip
-    strip.SetPixelColor(chaserAnimationState[param.index].IndexPixel, 
-        colorGamma.Correct(updatedColor));
+    #ifdef WS2812B    
+        RgbColor updatedColor = RgbColor::LinearBlend(
+            chaserAnimationState[param.index].StartingColor,
+            chaserAnimationState[param.index].EndingColor,
+            param.progress);
+        // apply the color to the strip
+        strip.SetPixelColor(chaserAnimationState[param.index].IndexPixel, 
+            colorGamma.Correct(updatedColor));
+    #endif
+
+    #ifdef SK6812    
+        RgbwColor updatedColor = RgbwColor::LinearBlend(
+            chaserAnimationState[param.index].StartingColor,
+            chaserAnimationState[param.index].EndingColor,
+            param.progress);
+        // apply the color to the strip
+        strip.SetPixelColor(chaserAnimationState[param.index].IndexPixel, 
+            colorGamma.Correct(updatedColor));
+    #endif
 }
 
 void ChaseAnimUpdate(const AnimationParam& param){
@@ -141,31 +161,60 @@ void BlendAnimUpdate(const AnimationParam& param)
     // progress will start at 0.0 and end at 1.0
     // we use the blend function on the RgbColor to mix
     // color based on the progress given to us in the animation
-    for (size_t panel = 0; panel < NUMBER_OF_PANELS; panel++){
-        RgbColor updatedColor = RgbColor::LinearBlend(
-            slowPanelAnimationState[panel].StartingColor,
-            slowPanelAnimationState[panel].EndingColor,
-            param.progress);
 
-        // apply the color to the strip
-        for (uint16_t pixel = 0; pixel < LEDS_PER_PANEL; pixel++)
-        {
-            strip.SetPixelColor(panel * LEDS_PER_PANEL + pixel, updatedColor);
+    #ifdef WS2812B    
+        for (size_t panel = 0; panel < NUMBER_OF_PANELS; panel++){
+            RgbColor updatedColor = RgbColor::LinearBlend(
+                slowPanelAnimationState[panel].StartingColor,
+                slowPanelAnimationState[panel].EndingColor,
+                param.progress);
+
+            // apply the color to the strip
+            for (uint16_t pixel = 0; pixel < LEDS_PER_PANEL; pixel++)
+            {
+                strip.SetPixelColor(panel * LEDS_PER_PANEL + pixel, updatedColor);
+            }
         }
-    }
+    #endif
 
+    #ifdef SK6812    
+        for (size_t panel = 0; panel < NUMBER_OF_PANELS; panel++){
+            RgbwColor updatedColor = RgbwColor::LinearBlend(
+                slowPanelAnimationState[panel].StartingColor,
+                slowPanelAnimationState[panel].EndingColor,
+                param.progress);
+
+            // apply the color to the strip
+            for (uint16_t pixel = 0; pixel < LEDS_PER_PANEL; pixel++)
+            {
+                strip.SetPixelColor(panel * LEDS_PER_PANEL + pixel, updatedColor);
+            }
+        }
+    #endif
 }
 
 void FastSegmentsAnimUpdate(const AnimationParam& param){
-    RgbColor updatedColor = RgbColor::LinearBlend(
-        fastSegmentsAnimationState.StartingColor,
-        fastSegmentsAnimationState.EndingColor,
-        param.progress);
+    #ifdef WS2812B    
+        RgbColor updatedColor = RgbColor::LinearBlend(
+            fastSegmentsAnimationState.StartingColor,
+            fastSegmentsAnimationState.EndingColor,
+            param.progress);
 
-    for (uint16_t pixel = 0; pixel < LEDS_PER_SEGMENT; pixel++){
-        strip.SetPixelColor(fastSegmentsAnimationState.Segment * LEDS_PER_SEGMENT + pixel, updatedColor);
-    }
+        for (uint16_t pixel = 0; pixel < LEDS_PER_SEGMENT; pixel++){
+            strip.SetPixelColor(fastSegmentsAnimationState.Segment * LEDS_PER_SEGMENT + pixel, updatedColor);
+        }
+    #endif
 
+    #ifdef SK6812    
+        RgbwColor updatedColor = RgbwColor::LinearBlend(
+            fastSegmentsAnimationState.StartingColor,
+            fastSegmentsAnimationState.EndingColor,
+            param.progress);
+
+        for (uint16_t pixel = 0; pixel < LEDS_PER_SEGMENT; pixel++){
+            strip.SetPixelColor(fastSegmentsAnimationState.Segment * LEDS_PER_SEGMENT + pixel, updatedColor);
+        }
+    #endif
 }
 
 void StopAnimations(){
