@@ -20,7 +20,7 @@
 
 #define DEFAULT_TIMEZONE                        2
 
-#define WIFI_CONNECTION_TIMEOUT                 10
+#define WIFI_CONNECTION_TIMEOUT                 30
 #define NTP_REFRESH_INTERVAL 3600
 
 #define DEFAULT_MQTT_SERVER                     "test.mosquitto.org"
