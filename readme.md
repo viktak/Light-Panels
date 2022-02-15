@@ -7,7 +7,5 @@ Detailed description can be found on my blog, [diy.viktak.com](https://diy.vikta
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-Please make sure to update tests as appropriate.
-
 ## License
 [Attribution 4.0 International (CC BY 4.0) ](https://creativecommons.org/licenses/by/4.0/)
