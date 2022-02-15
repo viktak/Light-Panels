@@ -2,7 +2,7 @@
 
 # Privacy friendly WiFi-controlled NanoLeaf-like light panels using ESP8266
 
-Detailed description can be found on my blog, [diy.viktak.com](https://diy.viktak.com/2020/11/gps-gsm-vehicle-tracker-recorder.html)
+Detailed description can be found on my blog, [diy.viktak.com](https://diy.viktak.com/2022/01/privacy-respecting-nanoleaf-replacement-light-panels.html)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
