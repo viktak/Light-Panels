@@ -27,7 +27,7 @@ namespace connection
 
     os_timer_t accessPointTimer;
 
-    void accessPointTimerCallback(void *pArg)
+    static void accessPointTimerCallback(void *pArg)
     {
         ESP.reset();
     }
@@ -40,7 +40,7 @@ namespace connection
         STATE_INTERNET_CONNECTED
     } connectionState;
 
-    boolean checkInternetConnection()
+    static boolean checkInternetConnection()
     {
         IPAddress timeServerIP;
         int result = WiFi.hostByName(ntpServerName, timeServerIP);
@@ -60,7 +60,6 @@ namespace connection
                 Serial.printf("Could not connect to %s.\r\nReverting to Access Point mode.\r\n", settings::wifiSSID);
 
                 delay(500);
-
                 WiFi.mode(WIFI_AP);
                 WiFi.softAP(settings::localHost, settings::accessPointPassword);
 

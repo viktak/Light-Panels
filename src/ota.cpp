@@ -52,7 +52,7 @@ namespace ota
 #endif
     }
 
-    void execOTA()
+    static void execOTA()
     {
         Serial.println("Connecting to: " + String(host));
         // Connect to S3

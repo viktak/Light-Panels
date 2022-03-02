@@ -42,7 +42,6 @@ namespace settings
 
     extern void setup();
 
-    extern void PrintSettings();
     extern bool LoadSettings();
     extern bool SaveSettings();
     extern void DefaultSettings();

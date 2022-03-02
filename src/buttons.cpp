@@ -19,7 +19,7 @@ namespace buttons
 
     Button2 btnMode = Button2(MODE_BUTTON_GPIO);
 
-    void btnButtonClicked(Button2 &btn)
+    static void btnButtonClicked(Button2 &btn)
     {
         if (btn == btnMode)
         {

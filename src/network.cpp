@@ -9,7 +9,6 @@
 #include "settings.h"
 #include "common.h"
 #include "timechangerules.h"
-#include "logger.h"
 
 #define ADMIN_USERNAME "admin"
 #define ESP_ACCESS_POINT_NAME_SIZE 63
@@ -31,12 +30,12 @@ namespace network
 
     TimeChangeRule *tcr;
 
-    void accessPointTimerCallback(void *pArg)
+    static void accessPointTimerCallback(void *pArg)
     {
         ESP.reset();
     }
 
-    bool is_authenticated()
+    static bool is_authenticated()
     {
 #ifdef __debugSettings
         return true;
@@ -52,7 +51,7 @@ namespace network
         return false;
     }
 
-    void handleLogin()
+    static void handleLogin()
     {
         String msg = "";
         if (webServer.hasHeader("Cookie"))
@@ -105,7 +104,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    void handleStatus()
+    static void handleStatus()
     {
 
         if (!is_authenticated())
@@ -213,7 +212,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    void handleNetworkSettings()
+    static void handleNetworkSettings()
     {
 
         if (!is_authenticated())
@@ -273,7 +272,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    void handleTools()
+    static void handleTools()
     {
 
         if (!is_authenticated())
@@ -325,7 +324,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    void handleGeneralSettings()
+    static void handleGeneralSettings()
     {
 
         if (!is_authenticated())
@@ -352,8 +351,6 @@ namespace network
                 os_timer_disarm(&common::heartbeatTimer);
                 settings::heartbeatInterval = atoi(webServer.arg("heartbeatinterval").c_str());
                 os_timer_arm(&common::heartbeatTimer, settings::heartbeatInterval * 1000, true);
-
-                logger::LogEvent(logger::EVENTCATEGORIES::HeartbeatIntervalChange, 1, "New Heartbeat interval", (String)settings::heartbeatInterval);
             }
 
             if (webServer.hasArg("timezoneselector"))
@@ -450,7 +447,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    void handleNotFound()
+    static void handleNotFound()
     {
         if (!is_authenticated())
         {

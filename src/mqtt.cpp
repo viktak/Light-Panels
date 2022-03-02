@@ -17,20 +17,23 @@ namespace mqtt
 {
     PubSubClient PSclient(network::client);
 
-    void ConnectToMQTTBroker()
+    const char *mqttCustomer = MQTT_CUSTOMER;
+    const char *mqttProject = MQTT_PROJECT;
+
+    static void ConnectToMQTTBroker()
     {
         if (!PSclient.connected())
         {
 #ifdef __debugSettings
             Serial.printf("Connecting to MQTT broker %s... ", settings::mqttServer);
 #endif
-            if (PSclient.connect(settings::localHost, (MQTT_CUSTOMER + String("/") + MQTT_PROJECT + String("/") + settings::mqttTopic + "/STATE").c_str(), 0, true, "offline"))
+            if (PSclient.connect(settings::localHost, (mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/STATE").c_str(), 0, true, "offline"))
             {
 #ifdef __debugSettings
                 Serial.println(" success.");
 #endif
-                PSclient.subscribe((MQTT_CUSTOMER + String("/") + MQTT_PROJECT + String("/") + settings::mqttTopic + "/cmnd").c_str(), 0);
-                PSclient.publish((MQTT_CUSTOMER + String("/") + MQTT_PROJECT + String("/") + settings::mqttTopic + "/STATE").c_str(), "online", true);
+                PSclient.subscribe((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/cmnd").c_str(), 0);
+                PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/STATE").c_str(), "online", true);
 
                 PSclient.setBufferSize(1024 * 5);
             }
@@ -92,7 +95,7 @@ namespace mqtt
 
         if (PSclient.connected())
         {
-            PSclient.publish((MQTT_CUSTOMER + String("/") + MQTT_PROJECT + String("/") + settings::mqttTopic + "/HEARTBEAT").c_str(), myJsonString.c_str(), false);
+            PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/HEARTBEAT").c_str(), myJsonString.c_str(), false);
 #ifdef __debugSettings
             Serial.println("Heartbeat sent.");
 #endif
@@ -100,7 +103,7 @@ namespace mqtt
         }
     }
 
-    void mqttCallback(char *topic, byte *payload, unsigned int len)
+    static void mqttCallback(char *topic, byte *payload, unsigned int len)
     {
         const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(14) + 300;
 

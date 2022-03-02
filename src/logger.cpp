@@ -1,25 +1,27 @@
 #include <Arduino.h>
 
+#include "settings.h"
+#include "mqtt.h"
+
 namespace logger
 {
     void LogEvent(int Category, int ID, String Title, String Data)
     {
-        //   todo
-        // if (PSclient.connected())
-        // {
+        if (mqtt::PSclient.connected())
+        {
 
-        //     String msg = "{";
+            String msg = "{";
 
-        //     msg += "\"Node\":" + (String)ESP.getChipId() + ",";
-        //     msg += "\"Category\":" + (String)Category + ",";
-        //     msg += "\"ID\":" + (String)ID + ",";
-        //     msg += "\"Title\":\"" + Title + "\",";
-        //     msg += "\"Data\":\"" + Data + "\"}";
+            msg += "\"Node\":" + (String)ESP.getChipId() + ",";
+            msg += "\"Category\":" + (String)Category + ",";
+            msg += "\"ID\":" + (String)ID + ",";
+            msg += "\"Title\":\"" + Title + "\",";
+            msg += "\"Data\":\"" + Data + "\"}";
 
-        //     debugln(msg);
+            Serial.println(msg);
 
-        //     PSclient.publish((MQTT_CUSTOMER + String("/") + MQTT_PROJECT + String("/") + appConfig.mqttTopic + "/log").c_str(), msg.c_str(), false);
-        // }
+            mqtt::PSclient.publish((mqtt::mqttCustomer + String("/") + mqtt::mqttProject + String("/") + settings::mqttTopic + "/log").c_str(), msg.c_str(), false);
+        }
     }
 
 }

@@ -3,9 +3,14 @@
 
 #include <PubSubClient.h>
 
+#include "network.h"
+
 namespace mqtt
 {
-    extern PubSubClient PSclient();
+    extern PubSubClient PSclient;
+    
+    extern const char *mqttCustomer;
+    extern const char *mqttProject;
 
     extern void ConnectToMQTTBroker();
     extern void SendHeartbeat();
