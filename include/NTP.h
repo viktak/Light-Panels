@@ -16,11 +16,13 @@
 #ifndef NTP_H
 #define NTP_H
 
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
 #include <TimeLib.h>
 #include <WiFiUdp.h>
 
+
+#define __debugSettings
+
+#define NTP_REFRESH_INTERVAL 3600
 #define LOCALPORT     2390 // Local port to listen for UDP packets
 #define NTP_PACKET_SIZE 48 // NTP time stamp is in the first 48 bytes of the message
 
@@ -31,10 +33,12 @@ byte packetBuffer[NTP_PACKET_SIZE]; // Buffer to hold incoming and outgoing pack
 
 // Don't hardwire the IP address or we won't get the benefits of the time server pool.
 IPAddress timeServerIP;
-//const char *ntpServerName = "time.nist.gov";
-//const char *ntpServerName = "nl.pool.ntp.org";
+#ifdef __debugSettings
 const char *ntpServerName = "192.168.1.3";
-
+#else
+const char *ntpServerName = "time.nist.gov";
+//const char *ntpServerName = "nl.pool.ntp.org";
+#endif
 
 // Send an NTP request to the time server at the given address
 unsigned long sendNTPpacket(IPAddress& address) {
