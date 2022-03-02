@@ -8,7 +8,7 @@
 #include "settings.h"
 #include "logger.h"
 
-// #define __debugSettings
+#define __debugSettings
 
 #define DEFAULT_ADMIN_PASSWORD "admin"
 #define DEFAULT_NODE_FRIENDLY_NAME "Light panel"
@@ -47,7 +47,7 @@ namespace settings
     char accessPointPassword[32];
     char localHost[48];
 
-    void PrintSettings()
+    static void PrintSettings()
     {
         Serial.println("==========================App settings==========================");
         Serial.printf("App name\t\t%s\r\nAdmin password\t\t%s\r\nSSID\t\t\t%s\r\nPassword\t\t%s\r\nAP Password\t\t%s\r\nTimezone\t\t%i\r\nMQTT Server\t\t%s\r\nMQTT Port\t\t%u\r\nMQTT TOPIC\t\t%s\r\nHearbeat interval\t%u\r\nMode:\t\t\t%u\r\n",
@@ -61,7 +61,6 @@ namespace settings
         if (!configFile)
         {
             Serial.println("Failed to open config file");
-            logger::LogEvent(logger::EVENTCATEGORIES::System, 1, "FS failure", "Failed to open config file.");
             return false;
         }
 
@@ -267,7 +266,8 @@ namespace settings
 
     void setup()
     {
-        LoadSettings();
+        if ( !LoadSettings() )
+            DefaultSettings();
 
 #ifdef __debugSettings
         PrintSettings();
