@@ -45,12 +45,12 @@ namespace settings
 
     //  Calculated values
     char accessPointPassword[32];
-    char localHost[48];
+    char localHost[24];
 
     static void PrintSettings()
     {
         Serial.println("==========================App settings==========================");
-        Serial.printf("App name\t\t%s\r\nAdmin password\t\t%s\r\nSSID\t\t\t%s\r\nPassword\t\t%s\r\nAP Password\t\t%s\r\nTimezone\t\t%i\r\nMQTT Server\t\t%s\r\nMQTT Port\t\t%u\r\nMQTT TOPIC\t\t%s\r\nHearbeat interval\t%u\r\nMode:\t\t\t%u\r\n",
+        Serial.printf("App name\t\t%s\r\nAdmin password\t\t%s\r\nSSID\t\t\t%s\r\nPassword\t\t%s\r\nAP Password\t\t%s\r\nTimezone\t\t%i\r\nMQTT Server\t\t%s\r\nMQTT Port\t\t%u\r\nMQTT TOPIC\t\t%s\r\nHearbeat interval\t%u\r\nMode:\t\t\t%li\r\n",
                       nodeFriendlyName, adminPassword, wifiSSID, wifiPassword, accessPointPassword, timeZone, mqttServer, mqttPort, mqttTopic, heartbeatInterval, mode);
         Serial.println("====================================================================");
     }

@@ -8,7 +8,8 @@
 #include "version.h"
 #include "settings.h"
 #include "common.h"
-#include "timechangerules.h"
+#include "TimeChangeRules.h"
+#include "ledstrip.h"
 
 #define ADMIN_USERNAME "admin"
 #define ESP_ACCESS_POINT_NAME_SIZE 63
@@ -29,11 +30,6 @@ namespace network
     os_timer_t accessPointTimer;
 
     TimeChangeRule *tcr;
-
-    static void accessPointTimerCallback(void *pArg)
-    {
-        ESP.reset();
-    }
 
     static bool is_authenticated()
     {
@@ -212,118 +208,6 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    static void handleNetworkSettings()
-    {
-
-        if (!is_authenticated())
-        {
-            String header = "HTTP/1.1 301 OK\r\nLocation: /login.html\r\nCache-Control: no-cache\r\n\r\n";
-            webServer.sendContent(header);
-            return;
-        }
-
-        if (webServer.method() == HTTP_POST)
-        { //  POST
-            if (webServer.hasArg("ssid"))
-            {
-                strcpy(settings::wifiSSID, webServer.arg("ssid").c_str());
-                strcpy(settings::wifiPassword, webServer.arg("password").c_str());
-                settings::SaveSettings();
-                ESP.restart();
-            }
-        }
-
-        File f = LittleFS.open("/pageheader.html", "r");
-
-        String headerString;
-
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
-        time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
-
-        f = LittleFS.open("/networksettings.html", "r");
-        String s, htmlString, wifiList;
-
-        byte numberOfNetworks = WiFi.scanNetworks();
-        for (size_t i = 0; i < numberOfNetworks; i++)
-        {
-            wifiList += "<div class=\"radio\"><label><input ";
-            if (i == 0)
-                wifiList += "id=\"ssid\" ";
-
-            wifiList += "type=\"radio\" name=\"ssid\" value=\"" + WiFi.SSID(i) + "\">" + WiFi.SSID(i) + "</label></div>";
-        }
-
-        while (f.available())
-        {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-            if (s.indexOf("%wifilist%") > -1)
-                s.replace("%wifilist%", wifiList);
-            htmlString += s;
-        }
-        f.close();
-        webServer.send(200, "text/html", htmlString);
-    }
-
-    static void handleTools()
-    {
-
-        if (!is_authenticated())
-        {
-            String header = "HTTP/1.1 301 OK\r\nLocation: /login.html\r\nCache-Control: no-cache\r\n\r\n";
-            webServer.sendContent(header);
-            return;
-        }
-
-        if (webServer.method() == HTTP_POST)
-        { //  POST
-
-            if (webServer.hasArg("reset"))
-            {
-                settings::DefaultSettings();
-                ESP.restart();
-            }
-
-            if (webServer.hasArg("restart"))
-            {
-                ESP.restart();
-            }
-        }
-
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
-        f = LittleFS.open("/tools.html", "r");
-
-        time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
-
-        String s, htmlString;
-
-        while (f.available())
-        {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-
-            htmlString += s;
-        }
-        f.close();
-        webServer.send(200, "text/html", htmlString);
-    }
-
     static void handleGeneralSettings()
     {
 
@@ -447,6 +331,185 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
+    void handleLightSettings()
+    {
+        if (!is_authenticated())
+        {
+            String header = "HTTP/1.1 301 OK\r\nLocation: /login.html\r\nCache-Control: no-cache\r\n\r\n";
+            webServer.sendContent(header);
+            return;
+        }
+
+        if (webServer.method() == HTTP_POST)
+        { //  POST
+
+            // for (size_t i = 0; i < server.args(); i++) {
+            //   Serial.print(server.argName(i));
+            //   Serial.print(": ");
+            //   Serial.println(server.arg(i));
+            // }
+
+            settings::mode = webServer.arg("optSelectMode").toInt();
+            settings::SaveSettings();
+            ledstrip::StopAnimations();
+        }
+
+        File f = LittleFS.open("/pageheader.html", "r");
+        String headerString;
+        if (f.available())
+            headerString = f.readString();
+        f.close();
+
+        time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
+
+        f = LittleFS.open("/lightsettings.html", "r");
+
+        String s, htmlString, chkReversed;
+
+        while (f.available())
+        {
+            s = f.readStringUntil('\n');
+
+            if (s.indexOf("%pageheader%") > -1)
+                s.replace("%pageheader%", headerString);
+            if (s.indexOf("%year%") > -1)
+                s.replace("%year%", (String)year(localTime));
+            if (s.indexOf("%mqtt-servername%") > -1)
+                s.replace("%mqtt-servername%", settings::mqttServer);
+            if (s.indexOf("%mqtt-port%") > -1)
+                s.replace("%mqtt-port%", String(settings::mqttPort));
+            if (s.indexOf("%mqtt-topic%") > -1)
+                s.replace("%mqtt-topic%", settings::mqttTopic);
+            if (s.indexOf("%friendlyname%") > -1)
+                s.replace("%friendlyname%", settings::nodeFriendlyName);
+            if (s.indexOf("%heartbeatinterval%") > -1)
+                s.replace("%heartbeatinterval%", (String)settings::heartbeatInterval);
+
+            if (s.indexOf("%checked0%") > -1)
+                s.replace("%checked0%", settings::mode == settings::OPERATION_MODES::LED_CHASER ? "checked" : "");
+            if (s.indexOf("%checked1%") > -1)
+                s.replace("%checked1%", settings::mode == settings::OPERATION_MODES::SLOW_PANELS ? "checked" : "");
+            if (s.indexOf("%checked2%") > -1)
+                s.replace("%checked2%", settings::mode == settings::OPERATION_MODES::FAST_CHANGING_RANDOM_SEGMENTS ? "checked" : "");
+
+            htmlString += s;
+        }
+        f.close();
+        webServer.send(200, "text/html", htmlString);
+    }
+
+    static void handleNetworkSettings()
+    {
+
+        if (!is_authenticated())
+        {
+            String header = "HTTP/1.1 301 OK\r\nLocation: /login.html\r\nCache-Control: no-cache\r\n\r\n";
+            webServer.sendContent(header);
+            return;
+        }
+
+        if (webServer.method() == HTTP_POST)
+        { //  POST
+            if (webServer.hasArg("ssid"))
+            {
+                strcpy(settings::wifiSSID, webServer.arg("ssid").c_str());
+                strcpy(settings::wifiPassword, webServer.arg("password").c_str());
+                settings::SaveSettings();
+                ESP.restart();
+            }
+        }
+
+        File f = LittleFS.open("/pageheader.html", "r");
+
+        String headerString;
+
+        if (f.available())
+            headerString = f.readString();
+        f.close();
+
+        time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
+
+        f = LittleFS.open("/networksettings.html", "r");
+        String s, htmlString, wifiList;
+
+        byte numberOfNetworks = WiFi.scanNetworks();
+        for (size_t i = 0; i < numberOfNetworks; i++)
+        {
+            wifiList += "<div class=\"radio\"><label><input ";
+            if (i == 0)
+                wifiList += "id=\"ssid\" ";
+
+            wifiList += "type=\"radio\" name=\"ssid\" value=\"" + WiFi.SSID(i) + "\">" + WiFi.SSID(i) + "</label></div>";
+        }
+
+        while (f.available())
+        {
+            s = f.readStringUntil('\n');
+
+            if (s.indexOf("%pageheader%") > -1)
+                s.replace("%pageheader%", headerString);
+            if (s.indexOf("%year%") > -1)
+                s.replace("%year%", (String)year(localTime));
+            if (s.indexOf("%wifilist%") > -1)
+                s.replace("%wifilist%", wifiList);
+            htmlString += s;
+        }
+        f.close();
+        webServer.send(200, "text/html", htmlString);
+    }
+
+    static void handleTools()
+    {
+
+        if (!is_authenticated())
+        {
+            String header = "HTTP/1.1 301 OK\r\nLocation: /login.html\r\nCache-Control: no-cache\r\n\r\n";
+            webServer.sendContent(header);
+            return;
+        }
+
+        if (webServer.method() == HTTP_POST)
+        { //  POST
+
+            if (webServer.hasArg("reset"))
+            {
+                settings::DefaultSettings();
+                ESP.restart();
+            }
+
+            if (webServer.hasArg("restart"))
+            {
+                ESP.restart();
+            }
+        }
+
+        File f = LittleFS.open("/pageheader.html", "r");
+        String headerString;
+        if (f.available())
+            headerString = f.readString();
+        f.close();
+
+        f = LittleFS.open("/tools.html", "r");
+
+        time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
+
+        String s, htmlString;
+
+        while (f.available())
+        {
+            s = f.readStringUntil('\n');
+
+            if (s.indexOf("%pageheader%") > -1)
+                s.replace("%pageheader%", headerString);
+            if (s.indexOf("%year%") > -1)
+                s.replace("%year%", (String)year(localTime));
+
+            htmlString += s;
+        }
+        f.close();
+        webServer.send(200, "text/html", htmlString);
+    }
+
     static void handleNotFound()
     {
         if (!is_authenticated())
@@ -495,9 +558,10 @@ namespace network
         webServer.on("/", handleStatus);
         webServer.on("/login.html", handleLogin);
         webServer.on("/status.html", handleStatus);
+        webServer.on("/generalsettings.html", handleGeneralSettings);
+        webServer.on("/lightsettings.html", handleLightSettings);
         webServer.on("/networksettings.html", handleNetworkSettings);
         webServer.on("/tools.html", handleTools);
-        webServer.on("/generalsettings.html", handleGeneralSettings);
 
         webServer.onNotFound(handleNotFound);
 

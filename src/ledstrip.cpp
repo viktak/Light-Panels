@@ -8,7 +8,7 @@
 //? Pick one: WS2812B, SK6812
 #define WS2812B
 
-#define NUMBER_OF_PANELS 3
+#define NUMBER_OF_PANELS 6
 #define SEGMENTS_PER_PANEL 3
 #define LEDS_PER_SEGMENT 8
 

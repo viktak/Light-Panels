@@ -29,7 +29,7 @@ namespace settings
     extern long mode;
 
     //  Calculated values
-    extern char localHost[48];
+    extern char localHost[24];
 
     enum OPERATION_MODES
     {
