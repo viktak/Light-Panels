@@ -22,7 +22,7 @@ namespace settings
 
     extern char mqttServer[64];
     extern int mqttPort;
-    extern char mqttTopic[16];
+    extern char mqttTopic[32];
 
     extern bool dst;
 

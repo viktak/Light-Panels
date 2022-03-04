@@ -20,7 +20,7 @@ namespace mqtt
     const char *mqttCustomer = MQTT_CUSTOMER;
     const char *mqttProject = MQTT_PROJECT;
 
-    static void ConnectToMQTTBroker()
+    void ConnectToMQTTBroker()
     {
         if (!PSclient.connected())
         {
@@ -103,7 +103,7 @@ namespace mqtt
         }
     }
 
-    static void mqttCallback(char *topic, byte *payload, unsigned int len)
+    void mqttCallback(char *topic, byte *payload, unsigned int len)
     {
         const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(14) + 300;
 

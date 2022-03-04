@@ -31,7 +31,7 @@ namespace network
 
     TimeChangeRule *tcr;
 
-    static bool is_authenticated()
+    bool is_authenticated()
     {
 #ifdef __debugSettings
         return true;
@@ -47,7 +47,7 @@ namespace network
         return false;
     }
 
-    static void handleLogin()
+    void handleLogin()
     {
         String msg = "";
         if (webServer.hasHeader("Cookie"))
@@ -100,7 +100,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    static void handleStatus()
+    void handleStatus()
     {
 
         if (!is_authenticated())
@@ -208,7 +208,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    static void handleGeneralSettings()
+    void handleGeneralSettings()
     {
 
         if (!is_authenticated())
@@ -398,7 +398,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    static void handleNetworkSettings()
+    void handleNetworkSettings()
     {
 
         if (!is_authenticated())
@@ -458,7 +458,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    static void handleTools()
+    void handleTools()
     {
 
         if (!is_authenticated())
@@ -510,7 +510,7 @@ namespace network
         webServer.send(200, "text/html", htmlString);
     }
 
-    static void handleNotFound()
+    void handleNotFound()
     {
         if (!is_authenticated())
         {

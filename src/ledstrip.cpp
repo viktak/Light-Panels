@@ -106,7 +106,7 @@ namespace ledstrip
     uint16_t frontPixel = 0; // the front of the loop
     RgbColor frontColor;     // the color at the front of the loop
 
-    static void FadeOutAnimUpdate(const AnimationParam &param)
+    void FadeOutAnimUpdate(const AnimationParam &param)
     {
 // this gets called for each animation on every time step
 // progress will start at 0.0 and end at 1.0
@@ -133,7 +133,7 @@ namespace ledstrip
 #endif
     }
 
-    static void ChaseAnimUpdate(const AnimationParam &param)
+    void ChaseAnimUpdate(const AnimationParam &param)
     {
         // wait for this animation to complete,
         // we are using it as a timer of sorts
@@ -166,7 +166,7 @@ namespace ledstrip
         }
     }
 
-    static void BlendAnimUpdate(const AnimationParam &param)
+    void BlendAnimUpdate(const AnimationParam &param)
     {
         // this gets called for each animation on every time step
         // progress will start at 0.0 and end at 1.0
@@ -206,7 +206,7 @@ namespace ledstrip
 #endif
     }
 
-    static void FastSegmentsAnimUpdate(const AnimationParam &param)
+    void FastSegmentsAnimUpdate(const AnimationParam &param)
     {
 #ifdef WS2812B
         RgbColor updatedColor = RgbColor::LinearBlend(

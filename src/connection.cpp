@@ -27,7 +27,7 @@ namespace connection
 
     os_timer_t accessPointTimer;
 
-    static void accessPointTimerCallback(void *pArg)
+    void accessPointTimerCallback(void *pArg)
     {
         ESP.reset();
     }
@@ -40,7 +40,7 @@ namespace connection
         STATE_INTERNET_CONNECTED
     } connectionState;
 
-    static boolean checkInternetConnection()
+    boolean checkInternetConnection()
     {
         IPAddress timeServerIP;
         int result = WiFi.hostByName(ntpServerName, timeServerIP);

@@ -37,7 +37,7 @@ namespace settings
 
     char mqttServer[64];
     int mqttPort;
-    char mqttTopic[16];
+    char mqttTopic[32];
 
     bool dst;
 
@@ -47,7 +47,7 @@ namespace settings
     char accessPointPassword[32];
     char localHost[24];
 
-    static void PrintSettings()
+    void PrintSettings()
     {
         Serial.println("==========================App settings==========================");
         Serial.printf("App name\t\t%s\r\nAdmin password\t\t%s\r\nSSID\t\t\t%s\r\nPassword\t\t%s\r\nAP Password\t\t%s\r\nTimezone\t\t%i\r\nMQTT Server\t\t%s\r\nMQTT Port\t\t%u\r\nMQTT TOPIC\t\t%s\r\nHearbeat interval\t%u\r\nMode:\t\t\t%li\r\n",
