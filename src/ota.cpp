@@ -163,7 +163,7 @@ namespace ota
                 // So be patient. This may take 2 - 5mins to complete
                 size_t written = Update.writeStream(network::client);
 
-                if (written == contentLength)
+                if (written == (size_t)contentLength)
                 {
                     Serial.println("Written : " + String(written) + " successfully");
                 }
