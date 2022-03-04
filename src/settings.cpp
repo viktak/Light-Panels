@@ -18,7 +18,7 @@
 
 #define DEFAULT_MQTT_SERVER "test.mosquitto.org"
 #define DEFAULT_MQTT_PORT 1883
-#define DEFAULT_MQTT_TOPIC "light-panel"
+#define DEFAULT_MQTT_TOPIC "vNode"
 
 #define DEFAULT_HEARTBEAT_INTERVAL 300 //  seconds
 
@@ -37,7 +37,7 @@ namespace settings
 
     char mqttServer[64];
     int mqttPort;
-    char mqttTopic[32];
+    char mqttTopic[16];
 
     bool dst;
 
@@ -60,15 +60,14 @@ namespace settings
         File configFile = LittleFS.open("/config.json", "r");
         if (!configFile)
         {
-            Serial.println("Failed to open config file");
+            Serial.println("Failed to open config file.");
             return false;
         }
 
         size_t size = configFile.size();
         if (size > 1024)
         {
-            Serial.println("Config file size is too large");
-            logger::LogEvent(logger::EVENTCATEGORIES::System, 2, "FS failure", "Config file size is too large.");
+            Serial.println("Config file size is too large.");
             return false;
         }
 
@@ -86,8 +85,7 @@ namespace settings
 
         if (error)
         {
-            Serial.println("Failed to parse config file");
-            logger::LogEvent(logger::EVENTCATEGORIES::System, 3, "FS failure", "Failed to parse config file.");
+            Serial.println("Failed to parse config file.");
             Serial.println(error.c_str());
             return false;
         }
@@ -97,15 +95,13 @@ namespace settings
         Serial.println();
 #endif
 
-        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
-
         if (doc["ssid"])
         {
             strcpy(wifiSSID, doc["ssid"]);
         }
         else
         {
-            strcpy(wifiSSID, localHost);
+            sprintf(wifiSSID, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
         }
 
         if (doc["password"])
@@ -144,13 +140,19 @@ namespace settings
             mqttPort = DEFAULT_MQTT_PORT;
         }
 
+        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
         if (doc["mqttTopic"])
         {
             strcpy(mqttTopic, doc["mqttTopic"]);
+
+            if (strcmp(localHost, mqttTopic) != 0)
+            {
+                sprintf(localHost, "%s-%s", mqttTopic, common::GetDeviceMAC().substring(6).c_str());
+            }
         }
         else
         {
-            sprintf(mqttTopic, "%s-%u", localHost, ESP.getChipId());
+            sprintf(mqttTopic, localHost);
         }
 
         if (doc["friendlyName"])
@@ -221,7 +223,6 @@ namespace settings
         if (!configFile)
         {
             Serial.println("Failed to open config file for writing");
-            logger::LogEvent(logger::EVENTCATEGORIES::System, 4, "FS failure", "Failed to open config file for writing.");
             return false;
         }
         serializeJson(doc, configFile);
@@ -266,7 +267,7 @@ namespace settings
 
     void setup()
     {
-        if ( !LoadSettings() )
+        if (!LoadSettings())
             DefaultSettings();
 
 #ifdef __debugSettings
