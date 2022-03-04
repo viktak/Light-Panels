@@ -6,6 +6,7 @@
 #include "filesystem.h"
 #include "network.h"
 #include "mqtt.h"
+#include "ota.h"
 #include "connection.h"
 #include "leds.h"
 #include "ledstrip.h"
@@ -14,7 +15,6 @@
 
 void setup()
 {
-
     Serial.begin(common::DEBUG_SPEED);
 #ifdef __debugSettings
     delay(1000); //  Wait for PlatformIO serial monitor
@@ -35,8 +35,10 @@ void setup()
     leds::setup();
     buttons::setup();
     network::setup();
+    ota::setup();
     mqtt::setup();
     ledstrip::setup();
+
 
     //  Finished setup()
     Serial.println("Setup finished successfully.");

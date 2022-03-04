@@ -3,8 +3,7 @@
 
 namespace ota
 {
-    void initOTA();
-    
+    extern void setup();    
     extern void loop();
 }
 

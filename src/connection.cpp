@@ -174,10 +174,6 @@ namespace connection
                         ntpInitialized = true;
 
                         Serial.println("Connected to the Internet.");
-
-                        ota::initOTA();
-
-                        network::InitWifiWebServer();
                     }
 
                     connectionState = STATE_INTERNET_CONNECTED;

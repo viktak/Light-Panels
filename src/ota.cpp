@@ -208,6 +208,10 @@ namespace ota
         }
     }
 
+    void setup(){
+        initOTA();
+    }
+
     void loop()
     {
         ArduinoOTA.handle();

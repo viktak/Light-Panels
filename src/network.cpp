@@ -617,6 +617,7 @@ namespace network
 
     void setup()
     {
+        InitWifiWebServer();
     }
 
     void loop()
