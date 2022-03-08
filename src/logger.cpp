@@ -9,7 +9,6 @@ namespace logger
     {
         if (mqtt::PSclient.connected())
         {
-
             String msg = "{";
 
             msg += "\"Node\":" + (String)ESP.getChipId() + ",";
@@ -18,10 +17,8 @@ namespace logger
             msg += "\"Title\":\"" + Title + "\",";
             msg += "\"Data\":\"" + Data + "\"}";
 
-            Serial.println(msg);
-
             mqtt::PSclient.publish((mqtt::mqttCustomer + String("/") + mqtt::mqttProject + String("/") + settings::mqttTopic + "/log").c_str(), msg.c_str(), false);
-        }
+        }   
     }
 
 }
