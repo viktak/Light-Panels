@@ -7,17 +7,7 @@
 
 namespace common
 {
-
-    bool needsHeartbeat = false;
-
-    os_timer_t heartbeatTimer;
-
     TimeChangeRule *tcr;
-
-    void heartbeatTimerCallback(void *pArg)
-    {
-        needsHeartbeat = true;
-    }
 
     //   !  For "strftime" to work delete Time.h file in TimeLib library  !!!
     char *GetFullDateTime(const char *formattingString, size_t size)
@@ -133,7 +123,5 @@ namespace common
     void setup()
     {
         SetRandomSeed();
-        os_timer_setfn(&heartbeatTimer, heartbeatTimerCallback, NULL);
-        os_timer_arm(&heartbeatTimer, settings::heartbeatInterval * 1000, true);
     }
 }

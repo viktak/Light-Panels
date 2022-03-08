@@ -82,11 +82,9 @@ namespace connection
                 //  Timers/interrupts
                 os_timer_setfn(&accessPointTimer, accessPointTimerCallback, NULL);
                 os_timer_arm(&accessPointTimer, ACCESS_POINT_TIMEOUT, true);
-                os_timer_disarm(&common::heartbeatTimer);
+                os_timer_disarm(&mqtt::heartbeatTimer);
             }
 
-            if (needsRestart)
-                ESP.restart();
         }
         else
         {
@@ -194,7 +192,7 @@ namespace connection
                 buttons::loop();
                 ledstrip::loop();
 
-                if (common::needsHeartbeat)
+                if (mqtt::needsHeartbeat)
                     mqtt::SendHeartbeat();
 
                 // Set next connection state

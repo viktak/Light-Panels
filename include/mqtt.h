@@ -7,6 +7,10 @@
 
 namespace mqtt
 {
+    extern os_timer_t heartbeatTimer;
+
+    extern bool needsHeartbeat;
+
     extern PubSubClient PSclient;
     
     extern const char *mqttCustomer;

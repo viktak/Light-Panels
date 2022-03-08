@@ -12,10 +12,6 @@ namespace common
     static const String HARDWARE_VERSION = "1.0";
     static const String FIRMWARE_ID = "lp-triangle";
 
-    extern os_timer_t heartbeatTimer;
-
-    extern bool needsHeartbeat;
-
     extern String GetDeviceMAC();
     extern char *GetFullDateTime(const char *formattingString, size_t size);
     extern String DateTimeToString(const time_t time);

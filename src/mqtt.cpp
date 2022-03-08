@@ -15,10 +15,18 @@
 
 namespace mqtt
 {
+    bool needsHeartbeat = false;
+    os_timer_t heartbeatTimer;
+
     PubSubClient PSclient(network::client);
 
     const char *mqttCustomer = MQTT_CUSTOMER;
     const char *mqttProject = MQTT_PROJECT;
+
+    void heartbeatTimerCallback(void *pArg)
+    {
+        needsHeartbeat = true;
+    }
 
     void ConnectToMQTTBroker()
     {
@@ -99,7 +107,7 @@ namespace mqtt
 #ifdef __debugSettings
             Serial.println("Heartbeat sent.");
 #endif
-            common::needsHeartbeat = false;
+            mqtt::needsHeartbeat = false;
         }
     }
 
@@ -140,6 +148,9 @@ namespace mqtt
     {
         PSclient.setServer(settings::mqttServer, settings::mqttPort);
         PSclient.setCallback(mqttCallback);
+
+        os_timer_setfn(&heartbeatTimer, heartbeatTimerCallback, NULL);
+        os_timer_arm(&heartbeatTimer, settings::heartbeatInterval * 1000, true);
     }
 
     void loop()

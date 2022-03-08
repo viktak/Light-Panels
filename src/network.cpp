@@ -10,6 +10,7 @@
 #include "common.h"
 #include "TimeChangeRules.h"
 #include "ledstrip.h"
+#include "mqtt.h"
 
 #define ADMIN_USERNAME "admin"
 #define ESP_ACCESS_POINT_NAME_SIZE 63
@@ -232,9 +233,9 @@ namespace network
 
             if (webServer.hasArg("heartbeatinterval"))
             {
-                os_timer_disarm(&common::heartbeatTimer);
+                os_timer_disarm(&mqtt::heartbeatTimer);
                 settings::heartbeatInterval = atoi(webServer.arg("heartbeatinterval").c_str());
-                os_timer_arm(&common::heartbeatTimer, settings::heartbeatInterval * 1000, true);
+                os_timer_arm(&mqtt::heartbeatTimer, settings::heartbeatInterval * 1000, true);
             }
 
             if (webServer.hasArg("timezoneselector"))
