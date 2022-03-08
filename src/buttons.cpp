@@ -8,15 +8,6 @@
 namespace buttons
 {
 
-    enum OPERATION_MODES
-    {
-        LED_CHASER,
-        SLOW_PANELS,
-        FAST_CHANGING_RANDOM_SEGMENTS,
-        ROTATING_PANELS,
-        NUMBER_OF_OPERATION_MODES
-    };
-
     Button2 btnMode = Button2(MODE_BUTTON_GPIO);
 
     void btnButtonClicked(Button2 &btn)
@@ -29,7 +20,7 @@ namespace buttons
             {
                 long m = settings::mode + 1;
                 Serial.println("SINGLE_CLICK");
-                settings::mode = m % NUMBER_OF_OPERATION_MODES;
+                settings::mode = m % settings::NUMBER_OF_OPERATION_MODES;
                 settings::SaveSettings();
                 ledstrip::StopAnimations();
                 break;
