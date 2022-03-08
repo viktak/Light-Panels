@@ -72,32 +72,21 @@ namespace network
             msg = "<div class=\"alert alert-danger\"><strong>Error!</strong> Wrong user name and/or password specified.<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a></div>";
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        f = LittleFS.open("/login.html", "r");
+        File f = LittleFS.open("/login.html", "r");
 
-        String s, htmlString;
+        String htmlString;
 
-        while (f.available())
+        if (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-            if (s.indexOf("%alert%") > -1)
-                s.replace("%alert%", msg);
-
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        htmlString.replace("%year%", (String)year(localTime));
+        htmlString.replace("%alert%", msg);
+
         webServer.send(200, "text/html", htmlString);
     }
 
@@ -111,101 +100,61 @@ namespace network
             return;
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        String s;
-
-        f = LittleFS.open("/status.html", "r");
+        File f = LittleFS.open("/status.html", "r");
 
         String htmlString;
 
-        while (f.available())
+        if (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            //  System information
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-            if (s.indexOf("%espid%") > -1)
-                s.replace("%espid%", (String)ESP.getChipId());
-            if (s.indexOf("%hardwareid%") > -1)
-                s.replace("%hardwareid%", common::HARDWARE_ID);
-            if (s.indexOf("%hardwareversion%") > -1)
-                s.replace("%hardwareversion%", common::HARDWARE_VERSION);
-            if (s.indexOf("%firmwareid%") > -1)
-                s.replace("%firmwareid%", common::FIRMWARE_ID);
-            if (s.indexOf("%firmwareversion%") > -1)
-                s.replace("%firmwareversion%", String(FIRMWARE_VERSION));
-            if (s.indexOf("%chipid%") > -1)
-                s.replace("%chipid%", String((String)ESP.getChipId()));
-            if (s.indexOf("%uptime%") > -1)
-                s.replace("%uptime%", common::TimeIntervalToString(millis() / 1000));
-            if (s.indexOf("%currenttime%") > -1)
-                s.replace("%currenttime%", common::DateTimeToString(localTime));
-            if (s.indexOf("%lastresetreason%") > -1)
-                s.replace("%lastresetreason%", ESP.getResetReason());
-            if (s.indexOf("%flashchipsize%") > -1)
-                s.replace("%flashchipsize%", String(ESP.getFlashChipSize()));
-            if (s.indexOf("%flashchipspeed%") > -1)
-                s.replace("%flashchipspeed%", String(ESP.getFlashChipSpeed()));
-            if (s.indexOf("%freeheapsize%") > -1)
-                s.replace("%freeheapsize%", String(ESP.getFreeHeap()));
-            if (s.indexOf("%freesketchspace%") > -1)
-                s.replace("%freesketchspace%", String(ESP.getFreeSketchSpace()));
-            if (s.indexOf("%friendlyname%") > -1)
-                s.replace("%friendlyname%", settings::nodeFriendlyName);
-            if (s.indexOf("%mqtt-topic%") > -1)
-                s.replace("%mqtt-topic%", settings::mqttTopic);
-
-            //  Network settings
-            switch (WiFi.getMode())
-            {
-            case WIFI_AP:
-                if (s.indexOf("%wifimode%") > -1)
-                    s.replace("%wifimode%", "Access Point");
-                if (s.indexOf("%macaddress%") > -1)
-                    s.replace("%macaddress%", String(WiFi.softAPmacAddress()));
-                if (s.indexOf("%networkaddress%") > -1)
-                    s.replace("%networkaddress%", WiFi.softAPIP().toString());
-                if (s.indexOf("%ssid%") > -1)
-                    s.replace("%ssid%", String(WiFi.SSID()));
-                if (s.indexOf("%subnetmask%") > -1)
-                    s.replace("%subnetmask%", "n/a");
-                if (s.indexOf("%gateway%") > -1)
-                    s.replace("%gateway%", "n/a");
-                break;
-            case WIFI_STA:
-                if (s.indexOf("%wifimode%") > -1)
-                    s.replace("%wifimode%", "Station");
-                if (s.indexOf("%macaddress%") > -1)
-                    s.replace("%macaddress%", WiFi.macAddress());
-                if (s.indexOf("%networkaddress%") > -1)
-                    s.replace("%networkaddress%", WiFi.localIP().toString());
-                if (s.indexOf("%ssid%") > -1)
-                    s.replace("%ssid%", String(WiFi.SSID()));
-                if (s.indexOf("%channel%") > -1)
-                    s.replace("%channel%", String(WiFi.channel()));
-                if (s.indexOf("%subnetmask%") > -1)
-                    s.replace("%subnetmask%", WiFi.subnetMask().toString());
-                if (s.indexOf("%gateway%") > -1)
-                    s.replace("%gateway%", WiFi.gatewayIP().toString());
-                break;
-            default:
-                //  This should not happen...
-                break;
-            }
-
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        //  System information
+        htmlString.replace("%year%", (String)year(localTime));
+        htmlString.replace("%espid%", (String)ESP.getChipId());
+        htmlString.replace("%hardwareid%", common::HARDWARE_ID);
+        htmlString.replace("%hardwareversion%", common::HARDWARE_VERSION);
+        htmlString.replace("%firmwareid%", common::FIRMWARE_ID);
+        htmlString.replace("%firmwareversion%", String(FIRMWARE_VERSION));
+        htmlString.replace("%chipid%", String((String)ESP.getChipId()));
+        htmlString.replace("%uptime%", common::TimeIntervalToString(millis() / 1000));
+        htmlString.replace("%currenttime%", common::DateTimeToString(localTime));
+        htmlString.replace("%lastresetreason%", ESP.getResetReason());
+        htmlString.replace("%flashchipsize%", String(ESP.getFlashChipSize()));
+        htmlString.replace("%flashchipspeed%", String(ESP.getFlashChipSpeed()));
+        htmlString.replace("%freeheapsize%", String(ESP.getFreeHeap()));
+        htmlString.replace("%freesketchspace%", String(ESP.getFreeSketchSpace()));
+        htmlString.replace("%friendlyname%", settings::nodeFriendlyName);
+        htmlString.replace("%mqtt-topic%", settings::mqttTopic);
+
+        //  Network settings
+        switch (WiFi.getMode())
+        {
+        case WIFI_AP:
+            htmlString.replace("%wifimode%", "Access Point");
+            htmlString.replace("%macaddress%", String(WiFi.softAPmacAddress()));
+            htmlString.replace("%networkaddress%", WiFi.softAPIP().toString());
+            htmlString.replace("%ssid%", String(WiFi.SSID()));
+            htmlString.replace("%subnetmask%", "n/a");
+            htmlString.replace("%gateway%", "n/a");
+            break;
+        case WIFI_STA:
+            htmlString.replace("%wifimode%", "Station");
+            htmlString.replace("%macaddress%", WiFi.macAddress());
+            htmlString.replace("%networkaddress%", WiFi.localIP().toString());
+            htmlString.replace("%ssid%", String(WiFi.SSID()));
+            htmlString.replace("%channel%", String(WiFi.channel()));
+            htmlString.replace("%subnetmask%", WiFi.subnetMask().toString());
+            htmlString.replace("%gateway%", WiFi.gatewayIP().toString());
+            break;
+        default:
+            //  This should not happen...
+            break;
+        }
+
         webServer.send(200, "text/html", htmlString);
     }
 
@@ -263,17 +212,11 @@ namespace network
             ESP.restart();
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
-        f = LittleFS.open("/generalsettings.html", "r");
+        File f = LittleFS.open("/generalsettings.html", "r");
 
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        String s, htmlString, timezoneslist = "";
+        String htmlString, timezoneslist = "";
 
         char ss[4];
 
@@ -297,38 +240,23 @@ namespace network
 
         while (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-            if (s.indexOf("%mqtt-servername%") > -1)
-                s.replace("%mqtt-servername%", settings::mqttServer);
-            if (s.indexOf("%mqtt-port%") > -1)
-                s.replace("%mqtt-port%", String(settings::mqttPort));
-            if (s.indexOf("%mqtt-topic%") > -1)
-                s.replace("%mqtt-topic%", settings::mqttTopic);
-            if (s.indexOf("%timezoneslist%") > -1)
-                s.replace("%timezoneslist%", timezoneslist);
-            if (s.indexOf("%friendlyname%") > -1)
-                s.replace("%friendlyname%", settings::nodeFriendlyName);
-            if (s.indexOf("%heartbeatinterval%") > -1)
-                s.replace("%heartbeatinterval%", (String)settings::heartbeatInterval);
-            if (s.indexOf("%accesspointpassword%") > -1)
-                s.replace("%accesspointpassword%", "");
-            if (s.indexOf("%confirmaccesspointpassword%") > -1)
-                s.replace("%confirmaccesspointpassword%", "");
-            if (s.indexOf("%deviceadminpassword%") > -1)
-                s.replace("%deviceadminpassword%", "");
-            if (s.indexOf("%confirmdeviceadminpassword%") > -1)
-                s.replace("%confirmdeviceadminpassword%", "");
-            if (s.indexOf("%deviceadmin%") > -1)
-                s.replace("%deviceadmin%", "admin");
-
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        htmlString.replace("%year%", (String)year(localTime));
+        htmlString.replace("%mqtt-servername%", settings::mqttServer);
+        htmlString.replace("%mqtt-port%", String(settings::mqttPort));
+        htmlString.replace("%mqtt-topic%", settings::mqttTopic);
+        htmlString.replace("%timezoneslist%", timezoneslist);
+        htmlString.replace("%friendlyname%", settings::nodeFriendlyName);
+        htmlString.replace("%heartbeatinterval%", (String)settings::heartbeatInterval);
+        htmlString.replace("%accesspointpassword%", "");
+        htmlString.replace("%confirmaccesspointpassword%", "");
+        htmlString.replace("%deviceadminpassword%", "");
+        htmlString.replace("%confirmdeviceadminpassword%", "");
+        htmlString.replace("%deviceadmin%", "admin");
+
         webServer.send(200, "text/html", htmlString);
     }
 
@@ -355,47 +283,31 @@ namespace network
             ledstrip::StopAnimations();
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        f = LittleFS.open("/lightsettings.html", "r");
+        File f = LittleFS.open("/lightsettings.html", "r");
 
-        String s, htmlString, chkReversed;
+        String htmlString, chkReversed;
 
-        while (f.available())
+        if (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-            if (s.indexOf("%mqtt-servername%") > -1)
-                s.replace("%mqtt-servername%", settings::mqttServer);
-            if (s.indexOf("%mqtt-port%") > -1)
-                s.replace("%mqtt-port%", String(settings::mqttPort));
-            if (s.indexOf("%mqtt-topic%") > -1)
-                s.replace("%mqtt-topic%", settings::mqttTopic);
-            if (s.indexOf("%friendlyname%") > -1)
-                s.replace("%friendlyname%", settings::nodeFriendlyName);
-            if (s.indexOf("%heartbeatinterval%") > -1)
-                s.replace("%heartbeatinterval%", (String)settings::heartbeatInterval);
-
-            if (s.indexOf("%checked0%") > -1)
-                s.replace("%checked0%", settings::mode == settings::OPERATION_MODES::LED_CHASER ? "checked" : "");
-            if (s.indexOf("%checked1%") > -1)
-                s.replace("%checked1%", settings::mode == settings::OPERATION_MODES::SLOW_PANELS ? "checked" : "");
-            if (s.indexOf("%checked2%") > -1)
-                s.replace("%checked2%", settings::mode == settings::OPERATION_MODES::FAST_CHANGING_RANDOM_SEGMENTS ? "checked" : "");
-
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        htmlString.replace("%year%", (String)year(localTime));
+        htmlString.replace("%mqtt-servername%", settings::mqttServer);
+        htmlString.replace("%mqtt-port%", String(settings::mqttPort));
+        htmlString.replace("%mqtt-topic%", settings::mqttTopic);
+        htmlString.replace("%friendlyname%", settings::nodeFriendlyName);
+        htmlString.replace("%heartbeatinterval%", (String)settings::heartbeatInterval);
+
+        htmlString.replace("%checked0%", settings::mode == settings::OPERATION_MODES::LED_CHASER ? "checked" : "");
+        htmlString.replace("%checked1%", settings::mode == settings::OPERATION_MODES::SLOW_PANELS ? "checked" : "");
+        htmlString.replace("%checked2%", settings::mode == settings::OPERATION_MODES::FAST_CHANGING_RANDOM_SEGMENTS ? "checked" : "");
+        htmlString.replace("%checked3%", settings::mode == settings::OPERATION_MODES::ROTATING_PANELS ? "checked" : "");
+        htmlString.replace("%checked4%", settings::mode == settings::OPERATION_MODES::ROTATING_PANELS_INVERTED ? "checked" : "");
+
         webServer.send(200, "text/html", htmlString);
     }
 
@@ -420,18 +332,10 @@ namespace network
             }
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-
-        String headerString;
-
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        f = LittleFS.open("/networksettings.html", "r");
-        String s, htmlString, wifiList;
+        File f = LittleFS.open("/networksettings.html", "r");
+        String htmlString, wifiList;
 
         byte numberOfNetworks = WiFi.scanNetworks();
         for (size_t i = 0; i < numberOfNetworks; i++)
@@ -443,19 +347,15 @@ namespace network
             wifiList += "type=\"radio\" name=\"ssid\" value=\"" + WiFi.SSID(i) + "\">" + WiFi.SSID(i) + "</label></div>";
         }
 
-        while (f.available())
+        if (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-            if (s.indexOf("%wifilist%") > -1)
-                s.replace("%wifilist%", wifiList);
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        htmlString.replace("%year%", (String)year(localTime));
+        htmlString.replace("%wifilist%", wifiList);
+        
         webServer.send(200, "text/html", htmlString);
     }
 
@@ -484,30 +384,20 @@ namespace network
             }
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
-        f = LittleFS.open("/tools.html", "r");
+        File f = LittleFS.open("/tools.html", "r");
 
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        String s, htmlString;
+        String htmlString;
 
-        while (f.available())
+        if (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        htmlString.replace("%year%", (String)year(localTime));
+
         webServer.send(200, "text/html", htmlString);
     }
 
@@ -520,30 +410,20 @@ namespace network
             return;
         }
 
-        File f = LittleFS.open("/pageheader.html", "r");
-        String headerString;
-        if (f.available())
-            headerString = f.readString();
-        f.close();
-
-        f = LittleFS.open("/badrequest.html", "r");
+        File f = LittleFS.open("/badrequest.html", "r");
 
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
 
-        String s, htmlString;
+        String htmlString;
 
-        while (f.available())
+        if (f.available())
         {
-            s = f.readStringUntil('\n');
-
-            if (s.indexOf("%pageheader%") > -1)
-                s.replace("%pageheader%", headerString);
-            if (s.indexOf("%year%") > -1)
-                s.replace("%year%", (String)year(localTime));
-
-            htmlString += s;
+            htmlString = f.readString();
         }
         f.close();
+
+        htmlString.replace("%year%", (String)year(localTime));
+
         webServer.send(200, "text/html", htmlString);
     }
 
