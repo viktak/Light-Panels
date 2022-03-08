@@ -8,16 +8,27 @@
 //? Pick one: WS2812B, SK6812
 #define WS2812B
 
-#define NUMBER_OF_PANELS 6
-#define SEGMENTS_PER_PANEL 3
-#define LEDS_PER_SEGMENT 8
-
-#define LEDS_PER_PANEL SEGMENTS_PER_PANEL *LEDS_PER_SEGMENT
-#define TOTAL_SEGMENTS SEGMENTS_PER_PANEL *NUMBER_OF_PANELS
-#define TOTAL_LEDS NUMBER_OF_PANELS *SEGMENTS_PER_PANEL *LEDS_PER_SEGMENT
-
 namespace ledstrip
 {
+
+#ifdef WS2812B
+    struct RotatingPanelAnimationState
+    {
+        RgbColor StartingColor;
+        RgbColor EndingColor;
+        uint16_t IndexPixel; // which pixel this animation is effecting
+    };
+#endif
+
+#ifdef SK6812
+    struct RotatingPanelAnimationState
+    {
+        RgbwColor StartingColor;
+        RgbwColor EndingColor;
+        uint16_t IndexPixel; // which pixel this animation is effecting
+    };
+#endif
+
 #ifdef WS2812B
     struct ChaserAnimationState
     {
@@ -72,29 +83,26 @@ namespace ledstrip
     };
 #endif
 
-    enum OPERATION_MODES
-    {
-        LED_CHASER,
-        SLOW_PANELS,
-        FAST_CHANGING_RANDOM_SEGMENTS,
-        ROTATING_PANELS,
-        NUMBER_OF_OPERATION_MODES
-    };
+    const uint16_t LEDS_PER_SEGMENT = 8;
+    const uint16_t SEGMENTS_PER_PANEL = 3; //  3: tirangle, 6: hexagon, etc.
+    const uint16_t NUMBER_OF_PANELS = 3;
 
-    const uint16_t PixelCount = TOTAL_LEDS;            // make sure to set this to the number of pixels in your strip
-    const uint16_t AnimCount = PixelCount / 5 * 2 + 1; // we only need enough animations for the tail and one extra
+    const uint16_t LEDS_PER_PANEL = LEDS_PER_SEGMENT * SEGMENTS_PER_PANEL;
+    const uint16_t TOTAL_LEDS = LEDS_PER_PANEL * NUMBER_OF_PANELS;
 
-    const uint16_t PixelFadeDuration = 500; // third of a second
+    const uint16_t AnimCount = TOTAL_LEDS;
+
+    const uint16_t PixelFadeDuration = 300;
     // one second divide by the number of pixels = loop once a second
-    const uint16_t NextPixelMoveDuration = 2000 / PixelCount; // how fast we move through the pixels
+    const uint16_t NextPixelMoveDuration = 2000 / TOTAL_LEDS; // how fast we move through the pixels
 
     NeoGamma<NeoGammaTableMethod> colorGamma; // for any fade animations, best to correct gamma
 
 #ifdef WS2812B
-    NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
+    NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(TOTAL_LEDS);
 #endif
 #ifdef SK6812
-    NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(PixelCount);
+    NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(TOTAL_LEDS);
 #endif
 
     NeoPixelAnimator animations(AnimCount); // NeoPixel animation management object
@@ -102,6 +110,7 @@ namespace ledstrip
     ChaserAnimationState chaserAnimationState[AnimCount];
     SlowPanelsAnimationState slowPanelAnimationState[NUMBER_OF_PANELS];
     FastSegmentsAnimationState fastSegmentsAnimationState;
+    RotatingPanelAnimationState rotatingPanelAnimationState[AnimCount];
 
     uint16_t frontPixel = 0; // the front of the loop
     RgbColor frontColor;     // the color at the front of the loop
@@ -144,7 +153,7 @@ namespace ledstrip
 
             // pick the next pixel inline to start animating
             //
-            frontPixel = (frontPixel + 1) % PixelCount; // increment and wrap
+            frontPixel = (frontPixel + 1) % TOTAL_LEDS; // increment and wrap
             if (frontPixel == 0)
             {
                 // we looped, lets pick a new front color
@@ -162,6 +171,80 @@ namespace ledstrip
                 chaserAnimationState[indexAnim].IndexPixel = frontPixel;
 
                 animations.StartAnimation(indexAnim, PixelFadeDuration, FadeOutAnimUpdate);
+            }
+        }
+    }
+
+    void FadeOutPanelAnimUpdate(const AnimationParam &param)
+    {
+
+#ifdef WS2812B
+        RgbColor updatedColor = RgbColor::LinearBlend(
+            rotatingPanelAnimationState[param.index].StartingColor,
+            rotatingPanelAnimationState[param.index].EndingColor,
+            param.progress);
+        // apply the color to the strip
+        strip.SetPixelColor(rotatingPanelAnimationState[param.index].IndexPixel,
+                            colorGamma.Correct(updatedColor));
+#endif
+
+#ifdef SK6812
+        RgbwColor updatedColor = RgbwColor::LinearBlend(
+            rotatingPanelAnimationState[param.index].StartingColor,
+            rotatingPanelAnimationState[param.index].EndingColor,
+            param.progress);
+        // apply the color to the strip
+        strip.SetPixelColor(rotatingPanelAnimationState[param.index].IndexPixel,
+                            colorGamma.Correct(updatedColor));
+#endif
+    }
+
+    void RotatingPanelAnimUpdate(const AnimationParam &param)
+    {
+        // wait for this animation to complete,
+        // we are using it as a timer of sorts
+        if (param.state == AnimationState_Completed)
+        {
+            // done, time to restart this position tracking animation/timer
+            animations.RestartAnimation(param.index);
+
+            // pick the next pixel inline to start animating
+            frontPixel = (frontPixel + 1) % LEDS_PER_PANEL; // increment and wrap
+            if (frontPixel == 0)
+            {
+                // we looped, lets pick a new front color
+                frontColor = HslColor(random(360) / 360.0f, 1.0f, 0.25f);
+            }
+
+            for (size_t i = 0; i < NUMBER_OF_PANELS; i++)
+            {
+                uint16_t indexAnim;
+                if (animations.NextAvailableAnimation(&indexAnim, 1))
+                {
+                    switch (settings::mode)
+                    {
+                    case settings::OPERATION_MODES::ROTATING_PANELS:
+                    {
+                        rotatingPanelAnimationState[indexAnim].StartingColor = frontColor;
+                        rotatingPanelAnimationState[indexAnim].EndingColor = RgbColor(0, 0, 0);
+                        rotatingPanelAnimationState[indexAnim].IndexPixel = frontPixel + i * LEDS_PER_PANEL;
+                        break;
+                    }
+
+                    case settings::OPERATION_MODES::ROTATING_PANELS_INVERTED:
+                    {
+                        rotatingPanelAnimationState[indexAnim].StartingColor = RgbColor(0, 0, 0);
+                        rotatingPanelAnimationState[indexAnim].EndingColor = frontColor;
+                        rotatingPanelAnimationState[indexAnim].IndexPixel = frontPixel + i * LEDS_PER_PANEL;
+                        break;
+                    }
+
+                    default:
+                        break;
+                    }
+
+                    animations.StartAnimation(indexAnim, PixelFadeDuration, FadeOutPanelAnimUpdate);
+                }
             }
         }
     }
@@ -262,11 +345,13 @@ namespace ledstrip
         {
             switch (settings::mode)
             {
-            case OPERATION_MODES::LED_CHASER:
+            case settings::OPERATION_MODES::LED_CHASER:
+            {
                 animations.StartAnimation(0, NextPixelMoveDuration, ChaseAnimUpdate);
                 break;
-
-            case OPERATION_MODES::SLOW_PANELS:
+            }
+            case settings::OPERATION_MODES::SLOW_PANELS:
+            {
                 for (size_t panel = 0; panel < NUMBER_OF_PANELS; panel++)
                 {
                     RgbColor target = HslColor(random(360) / 360.0f, 1.0f, .5f);
@@ -277,8 +362,9 @@ namespace ledstrip
                     animations.StartAnimation(panel, 5000, BlendAnimUpdate);
                 }
                 break;
+            }
 
-            case OPERATION_MODES::FAST_CHANGING_RANDOM_SEGMENTS:
+            case settings::OPERATION_MODES::FAST_CHANGING_RANDOM_SEGMENTS:
             {
                 if (fastSegmentsAnimationState.dir)
                 {
@@ -296,8 +382,17 @@ namespace ledstrip
                 fastSegmentsAnimationState.dir = !fastSegmentsAnimationState.dir;
                 break;
             }
-            case OPERATION_MODES::ROTATING_PANELS:
+            case settings::OPERATION_MODES::ROTATING_PANELS:
+            {
+                animations.StartAnimation(0, NextPixelMoveDuration, RotatingPanelAnimUpdate);
+                break;
+            }
+            case settings::OPERATION_MODES::ROTATING_PANELS_INVERTED:
+            {
 
+                animations.StartAnimation(0, NextPixelMoveDuration, RotatingPanelAnimUpdate);
+                break;
+            }
             default:
                 break;
             }
