@@ -88,7 +88,7 @@ namespace mqtt
         wifiDetails["SSID"] = settings::wifiSSID;
         wifiDetails["Channel"] = WiFi.channel();
         wifiDetails["IP_Address"] = WiFi.localIP().toString();
-        wifiDetails["MAC_Address"] = common::GetDeviceMAC();
+        wifiDetails["MAC_Address"] = WiFi.macAddress();
 
         String myJsonString;
 
