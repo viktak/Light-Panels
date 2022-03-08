@@ -37,6 +37,7 @@ namespace settings
         SLOW_PANELS,
         FAST_CHANGING_RANDOM_SEGMENTS,
         ROTATING_PANELS,
+        ROTATING_PANELS_INVERTED,
         NUMBER_OF_OPERATION_MODES
     };
 
