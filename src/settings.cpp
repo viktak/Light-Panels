@@ -29,7 +29,7 @@ namespace settings
 
     bool dst;
 
-    long mode;
+    long mode = OPERATION_MODES::LED_CHASER;
 
     //  Calculated values
     char accessPointPassword[32];
@@ -135,45 +135,41 @@ namespace settings
         {
             mode = doc["mode"];
         }
-        else
+
+        if (strcmp(localHost, mqttTopic) != 0)
         {
-            mode = OPERATION_MODES::LED_CHASER;
-            if (strcmp(localHost, mqttTopic) != 0)
+            char mac[7];
+            strcpy(mac, common::GetDeviceMAC().substring(6).c_str());
+
+            char topic[sizeof(localHost) + sizeof(mac) + 1];
+            for (size_t i = 0; i < sizeof(topic); i++)
             {
-                char mac[7];
-                strcpy(mac, common::GetDeviceMAC().substring(6).c_str());
-
-                char topic[sizeof(localHost) + sizeof(mac) + 1];
-                for (size_t i = 0; i < sizeof(topic); i++)
-                {
-                    topic[i] = 0;
-                }
-
-                size_t pos = 0;
-                for (size_t i = 0; i < 25; i++)
-                {
-                    if (mqttTopic[i] != 0)
-                    {
-                        topic[i] = mqttTopic[i];
-                        pos = i;
-                    }
-                    else
-                    {
-                        pos++;
-                        break;
-                    }
-                }
-
-                topic[pos++] = '-';
-                
-
-                for (size_t i = 0; i < sizeof(mac); i++)
-                {
-                    topic[pos + i] = mac[i];
-                }
-
-                strcpy(localHost, topic);
+                topic[i] = 0;
             }
+
+            size_t pos = 0;
+            for (size_t i = 0; i < 25; i++)
+            {
+                if (mqttTopic[i] != 0)
+                {
+                    topic[i] = mqttTopic[i];
+                    pos = i;
+                }
+                else
+                {
+                    pos++;
+                    break;
+                }
+            }
+
+            topic[pos++] = '-';
+
+            for (size_t i = 0; i < sizeof(mac); i++)
+            {
+                topic[pos + i] = mac[i];
+            }
+
+            strcpy(localHost, topic);
         }
 
         return true;
