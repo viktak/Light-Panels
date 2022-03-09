@@ -14,9 +14,14 @@
 #define DEFAULT_NODE_FRIENDLY_NAME "Light panel"
 #define DEFAULT_AP_PASSWORD "esp12345678"
 
-#define DEFAULT_TIMEZONE 2
+#define DEFAULT_TIMEZONE 13
 
+#ifdef __debugSettings
+#define DEFAULT_MQTT_SERVER "192.168.1.99"
+#else
 #define DEFAULT_MQTT_SERVER "test.mosquitto.org"
+#endif
+
 #define DEFAULT_MQTT_PORT 1883
 #define DEFAULT_MQTT_TOPIC "vNode"
 
@@ -26,17 +31,17 @@ namespace settings
 {
     //  Saved values
     char wifiSSID[22];
-    char wifiPassword[32];
+    char wifiPassword[32] = "";
 
-    char adminPassword[32];
+    char adminPassword[32] = DEFAULT_ADMIN_PASSWORD;
 
-    char nodeFriendlyName[32];
-    u_int heartbeatInterval;
+    char nodeFriendlyName[32] = DEFAULT_NODE_FRIENDLY_NAME;
+    u_int heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
 
-    signed char timeZone;
+    signed char timeZone = DEFAULT_TIMEZONE;
 
-    char mqttServer[64];
-    int mqttPort;
+    char mqttServer[64] = DEFAULT_MQTT_SERVER;
+    int mqttPort = DEFAULT_MQTT_PORT;
     char mqttTopic[32];
 
     bool dst;
@@ -45,18 +50,13 @@ namespace settings
 
     //  Calculated values
     char accessPointPassword[32];
-    char localHost[24];
-
-    void PrintSettings()
-    {
-        Serial.println("==========================App settings==========================");
-        Serial.printf("App name\t\t%s\r\nAdmin password\t\t%s\r\nSSID\t\t\t%s\r\nPassword\t\t%s\r\nAP Password\t\t%s\r\nTimezone\t\t%i\r\nMQTT Server\t\t%s\r\nMQTT Port\t\t%u\r\nMQTT TOPIC\t\t%s\r\nHearbeat interval\t%u\r\nMode:\t\t\t%li\r\n",
-                      nodeFriendlyName, adminPassword, wifiSSID, wifiPassword, accessPointPassword, timeZone, mqttServer, mqttPort, mqttTopic, heartbeatInterval, mode);
-        Serial.println("====================================================================");
-    }
+    char localHost[48];
 
     bool LoadSettings()
     {
+
+        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
+
         File configFile = LittleFS.open("/config.json", "r");
         if (!configFile)
         {
@@ -108,47 +108,25 @@ namespace settings
         {
             strcpy(wifiPassword, doc["password"]);
         }
-        else
-        {
-            strcpy(wifiPassword, DEFAULT_ADMIN_PASSWORD);
-        }
 
         if (doc["accessPointPassword"])
         {
             strcpy(accessPointPassword, doc["accessPointPassword"]);
-        }
-        else
-        {
-            strcpy(accessPointPassword, DEFAULT_AP_PASSWORD);
         }
 
         if (doc["mqttServer"])
         {
             strcpy(mqttServer, doc["mqttServer"]);
         }
-        else
-        {
-            strcpy(mqttServer, DEFAULT_MQTT_SERVER);
-        }
 
         if (doc["mqttPort"])
         {
             mqttPort = doc["mqttPort"];
         }
-        else
-        {
-            mqttPort = DEFAULT_MQTT_PORT;
-        }
 
-        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
         if (doc["mqttTopic"])
         {
             strcpy(mqttTopic, doc["mqttTopic"]);
-
-            if (strcmp(localHost, mqttTopic) != 0)
-            {
-                sprintf(localHost, "%s-%s", mqttTopic, common::GetDeviceMAC().substring(6).c_str());
-            }
         }
         else
         {
@@ -159,27 +137,15 @@ namespace settings
         {
             strcpy(nodeFriendlyName, doc["friendlyName"]);
         }
-        else
-        {
-            strcpy(nodeFriendlyName, DEFAULT_NODE_FRIENDLY_NAME);
-        }
 
         if (doc["timezone"])
         {
             timeZone = doc["timezone"];
         }
-        else
-        {
-            timeZone = 0;
-        }
 
         if (doc["heartbeatInterval"])
         {
             heartbeatInterval = doc["heartbeatInterval"];
-        }
-        else
-        {
-            heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
         }
 
         if (doc["mode"])
@@ -189,6 +155,11 @@ namespace settings
         else
         {
             mode = OPERATION_MODES::LED_CHASER;
+            if (strcmp(localHost, mqttTopic) != 0)
+            {
+                String s = common::GetDeviceMAC().substring(6);
+                sprintf(localHost, "%s-%s", mqttTopic, s.c_str());
+            }
         }
 
         return true;
@@ -245,7 +216,7 @@ namespace settings
 
         strcpy(mqttTopic, localHost);
 
-        timeZone = 2;
+        timeZone = DEFAULT_TIMEZONE;
 
         strcpy(nodeFriendlyName, DEFAULT_NODE_FRIENDLY_NAME);
         heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
@@ -269,9 +240,5 @@ namespace settings
     {
         if (!LoadSettings())
             DefaultSettings();
-
-#ifdef __debugSettings
-        PrintSettings();
-#endif
     }
 }
