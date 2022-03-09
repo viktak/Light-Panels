@@ -19,8 +19,7 @@
 #include <TimeLib.h>
 #include <WiFiUdp.h>
 
-
-#define __debugSettings
+#include "common.h"
 
 #define NTP_REFRESH_INTERVAL 3600
 #define LOCALPORT     2390 // Local port to listen for UDP packets

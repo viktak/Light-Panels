@@ -1,5 +1,6 @@
 #include "Button2.h"
 
+#include "common.h"
 #include "settings.h"
 #include "ledstrip.h"
 

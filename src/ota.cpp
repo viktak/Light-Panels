@@ -2,10 +2,9 @@
 #include <ESP8266httpUpdate.h>
 #include <ArduinoOTA.h>
 
+#include "common.h"
 #include "network.h"
 #include "leds.h"
-
-#define __debugSettings
 
 #define OTA_BLINKING_RATE 3
 

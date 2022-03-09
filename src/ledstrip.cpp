@@ -85,7 +85,7 @@ namespace ledstrip
 
     const uint16_t LEDS_PER_SEGMENT = 8;
     const uint16_t SEGMENTS_PER_PANEL = 3; //  3: tirangle, 6: hexagon, etc.
-    const uint16_t NUMBER_OF_PANELS = 3;
+    const uint16_t NUMBER_OF_PANELS = 6;
 
     const uint16_t LEDS_PER_PANEL = LEDS_PER_SEGMENT * SEGMENTS_PER_PANEL;
     const uint16_t TOTAL_LEDS = LEDS_PER_PANEL * NUMBER_OF_PANELS;

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
+#include "common.h"
 #include "NTP.h"
 #include "settings.h"
 #include "network.h"
@@ -9,8 +10,6 @@
 #include "leds.h"
 #include "buttons.h"
 #include "ledstrip.h"
-
-#define __debugSettings
 
 #define MAX_WIFI_INACTIVITY 300
 #define WIFI_CONNECTION_TIMEOUT 10

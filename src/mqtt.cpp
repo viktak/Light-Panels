@@ -11,8 +11,6 @@
 #define MQTT_CUSTOMER "viktak"
 #define MQTT_PROJECT "spiti"
 
-#define __debugSettings
-
 namespace mqtt
 {
     bool needsHeartbeat = false;

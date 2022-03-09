@@ -2,7 +2,6 @@
 #include "common.h"
 #include "settings.h"
 #include "buttons.h"
-
 #include "filesystem.h"
 #include "network.h"
 #include "mqtt.h"
@@ -10,8 +9,6 @@
 #include "connection.h"
 #include "leds.h"
 #include "ledstrip.h"
-
-#define __debugSettings
 
 void setup()
 {
