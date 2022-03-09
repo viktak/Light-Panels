@@ -8,24 +8,7 @@
 #include "settings.h"
 #include "logger.h"
 
-#define __debugSettings
-
-#define DEFAULT_ADMIN_PASSWORD "admin"
-#define DEFAULT_NODE_FRIENDLY_NAME "Light panel"
-#define DEFAULT_AP_PASSWORD "esp12345678"
-
 #define DEFAULT_TIMEZONE 13
-
-#ifdef __debugSettings
-#define DEFAULT_MQTT_SERVER "192.168.1.99"
-#else
-#define DEFAULT_MQTT_SERVER "test.mosquitto.org"
-#endif
-
-#define DEFAULT_MQTT_PORT 1883
-#define DEFAULT_MQTT_TOPIC "vNode"
-
-#define DEFAULT_HEARTBEAT_INTERVAL 300 //  seconds
 
 namespace settings
 {
@@ -50,7 +33,7 @@ namespace settings
 
     //  Calculated values
     char accessPointPassword[32];
-    char localHost[48];
+    char localHost[32];
 
     bool LoadSettings()
     {
@@ -157,8 +140,39 @@ namespace settings
             mode = OPERATION_MODES::LED_CHASER;
             if (strcmp(localHost, mqttTopic) != 0)
             {
-                String s = common::GetDeviceMAC().substring(6);
-                sprintf(localHost, "%s-%s", mqttTopic, s.c_str());
+                char mac[7];
+                strcpy(mac, common::GetDeviceMAC().substring(6).c_str());
+
+                char topic[sizeof(localHost) + sizeof(mac) + 1];
+                for (size_t i = 0; i < sizeof(topic); i++)
+                {
+                    topic[i] = 0;
+                }
+
+                size_t pos = 0;
+                for (size_t i = 0; i < 25; i++)
+                {
+                    if (mqttTopic[i] != 0)
+                    {
+                        topic[i] = mqttTopic[i];
+                        pos = i;
+                    }
+                    else
+                    {
+                        pos++;
+                        break;
+                    }
+                }
+
+                topic[pos++] = '-';
+                
+
+                for (size_t i = 0; i < sizeof(mac); i++)
+                {
+                    topic[pos + i] = mac[i];
+                }
+
+                strcpy(localHost, topic);
             }
         }
 
