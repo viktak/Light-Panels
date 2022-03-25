@@ -2,7 +2,6 @@
 #include <ESP8266WiFi.h>
 
 #include "common.h"
-#include "NTP.h"
 #include "settings.h"
 #include "network.h"
 #include "mqtt.h"
@@ -10,6 +9,7 @@
 #include "leds.h"
 #include "buttons.h"
 #include "ledstrip.h"
+#include "ntp.h"
 
 #define MAX_WIFI_INACTIVITY 300
 #define WIFI_CONNECTION_TIMEOUT 10
@@ -22,7 +22,7 @@ namespace connection
     bool isAccessPointCreated = false;
     bool needsRestart = false;
 
-    const char *ntpServerName = "diy.viktak.com";
+    const char *internetServerName = "diy.viktak.com";
 
     os_timer_t accessPointTimer;
 
@@ -42,7 +42,7 @@ namespace connection
     boolean checkInternetConnection()
     {
         IPAddress timeServerIP;
-        int result = WiFi.hostByName(ntpServerName, timeServerIP);
+        int result = WiFi.hostByName(internetServerName, timeServerIP);
         return (result == 1);
     }
 
@@ -83,7 +83,6 @@ namespace connection
                 os_timer_arm(&accessPointTimer, ACCESS_POINT_TIMEOUT, true);
                 os_timer_disarm(&mqtt::heartbeatTimer);
             }
-
         }
         else
         {
@@ -166,7 +165,7 @@ namespace connection
                     if (!ntpInitialized)
                     {
                         // We are connected to the Internet for the first time so set NTP provider
-                        initNTP();
+                        ntp::setup();
 
                         ntpInitialized = true;
 
@@ -190,6 +189,7 @@ namespace connection
                 mqtt::loop();
                 buttons::loop();
                 ledstrip::loop();
+                ntp::loop();
 
                 if (mqtt::needsHeartbeat)
                     mqtt::SendHeartbeat();

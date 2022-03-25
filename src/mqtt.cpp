@@ -52,10 +52,19 @@ namespace mqtt
         }
     }
 
+    void PublishData(const char *topic, const char *payload, bool retained)
+    {
+        ConnectToMQTTBroker();
+
+        if (PSclient.connected())
+        {
+            PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + String("/") + topic).c_str(), payload, retained);
+        }
+    }
+
     void SendHeartbeat()
     {
 
-        // todo
         StaticJsonDocument<768> doc;
 
         JsonObject sysDetails = doc.createNestedObject("System");

@@ -12,9 +12,11 @@ namespace mqtt
     extern bool needsHeartbeat;
 
     extern PubSubClient PSclient;
-    
+
     extern const char *mqttCustomer;
     extern const char *mqttProject;
+
+    extern void PublishData(const char *topic, const char *payload, bool retained);
 
     extern void ConnectToMQTTBroker();
     extern void SendHeartbeat();

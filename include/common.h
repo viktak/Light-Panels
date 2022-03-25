@@ -6,7 +6,7 @@
 
 namespace common
 {
-// #define __debugSettings
+#define __debugSettings
 
     static const int32_t DEBUG_SPEED = 921600;
     static const String HARDWARE_ID = "light-panel-controller-tri";
