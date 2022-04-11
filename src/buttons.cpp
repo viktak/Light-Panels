@@ -15,9 +15,9 @@ namespace buttons
     {
         if (btn == btnMode)
         {
-            switch (btn.getClickType())
+            switch (btn.getType())
             {
-            case SINGLE_CLICK:
+            case single_click:
             {
                 long m = settings::mode + 1;
                 Serial.println("SINGLE_CLICK");
@@ -26,13 +26,13 @@ namespace buttons
                 ledstrip::StopAnimations();
                 break;
             }
-            case DOUBLE_CLICK:
+            case double_click:
                 Serial.println("DOUBLE_CLICK");
                 break;
-            case TRIPLE_CLICK:
+            case triple_click:
                 Serial.println("TRIPLE_CLICK");
                 break;
-            case LONG_CLICK:
+            case long_click:
                 Serial.println("LONG_CLICK");
                 break;
             default:
