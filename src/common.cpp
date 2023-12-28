@@ -5,123 +5,110 @@
 #include "timechangerules.h"
 #include "settings.h"
 
-namespace common
+TimeChangeRule *tcr;
+
+void SetRandomSeed()
 {
-    TimeChangeRule *tcr;
+    uint32_t seed;
 
-    //   !  For "strftime" to work delete Time.h file in TimeLib library  !!!
-    char *GetFullDateTime(const char *formattingString, size_t size)
+    // random works best with a seed that can use 31 bits
+    // analogRead on a unconnected pin tends toward less than four bits
+    seed = analogRead(0);
+    delay(1);
+
+    for (int shifts = 3; shifts < 31; shifts += 3)
     {
-        time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
-        struct tm *now = localtime(&localTime);
-        char *buf = new char[20];
-        strftime(buf, 20, formattingString, now);
-        return buf;
-    }
-
-    void SetRandomSeed()
-    {
-        uint32_t seed;
-
-        // random works best with a seed that can use 31 bits
-        // analogRead on a unconnected pin tends toward less than four bits
-        seed = analogRead(0);
+        seed ^= analogRead(0) << shifts;
         delay(1);
-
-        for (int shifts = 3; shifts < 31; shifts += 3)
-        {
-            seed ^= analogRead(0) << shifts;
-            delay(1);
-        }
-
-        randomSeed(seed);
     }
 
-    String DateTimeToString(const time_t time)
-    {
+    randomSeed(seed);
+}
 
-        String myTime = "";
-        char s[2];
+String DateTimeToString(const time_t time)
+{
 
-        //  years
-        itoa(year(time), s, DEC);
-        myTime += s;
-        myTime += "-";
+    String myTime = "";
+    char s[2];
 
-        //  months
-        itoa(month(time), s, DEC);
-        myTime += s;
-        myTime += "-";
+    //  years
+    itoa(year(time), s, DEC);
+    myTime += s;
+    myTime += "-";
 
-        //  days
-        itoa(day(time), s, DEC);
-        myTime += s;
+    //  months
+    itoa(month(time), s, DEC);
+    myTime += s;
+    myTime += "-";
 
-        myTime += " ";
+    //  days
+    itoa(day(time), s, DEC);
+    myTime += s;
 
-        //  hours
-        itoa(hour(time), s, DEC);
-        myTime += s;
-        myTime += ":";
+    myTime += " ";
 
-        //  minutes
-        if (minute(time) < 10)
-            myTime += "0";
+    //  hours
+    itoa(hour(time), s, DEC);
+    myTime += s;
+    myTime += ":";
 
-        itoa(minute(time), s, DEC);
-        myTime += s;
-        myTime += ":";
+    //  minutes
+    if (minute(time) < 10)
+        myTime += "0";
 
-        //  seconds
-        if (second(time) < 10)
-            myTime += "0";
+    itoa(minute(time), s, DEC);
+    myTime += s;
+    myTime += ":";
 
-        itoa(second(time), s, DEC);
-        myTime += s;
+    //  seconds
+    if (second(time) < 10)
+        myTime += "0";
 
-        return myTime;
-    }
+    itoa(second(time), s, DEC);
+    myTime += s;
 
-    String TimeIntervalToString(const time_t time)
-    {
+    return myTime;
+}
 
-        String myTime = "";
-        char s[2];
+String TimeIntervalToString(const time_t time)
+{
 
-        //  hours
-        itoa((time / 3600), s, DEC);
-        myTime += s;
-        myTime += ":";
+    String myTime = "";
+    char s[2];
 
-        //  minutes
-        if (minute(time) < 10)
-            myTime += "0";
+    //  hours
+    itoa((time / 3600), s, DEC);
+    myTime += s;
+    myTime += ":";
 
-        itoa(minute(time), s, DEC);
-        myTime += s;
-        myTime += ":";
+    //  minutes
+    if (minute(time) < 10)
+        myTime += "0";
 
-        //  seconds
-        if (second(time) < 10)
-            myTime += "0";
+    itoa(minute(time), s, DEC);
+    myTime += s;
+    myTime += ":";
 
-        itoa(second(time), s, DEC);
-        myTime += s;
-        return myTime;
-    }
+    //  seconds
+    if (second(time) < 10)
+        myTime += "0";
 
-    String GetDeviceMAC()
-    {
-        String s = WiFi.macAddress();
+    itoa(second(time), s, DEC);
+    myTime += s;
+    return myTime;
+}
 
-        for (size_t i = 0; i < 5; i++)
-            s.remove(14 - i * 3, 1);
+String GetDeviceMAC()
+{
+    String s = WiFi.macAddress();
 
-        return s;
-    }
+    for (size_t i = 0; i < 5; i++)
+        s.remove(14 - i * 3, 1);
 
-    void setup()
-    {
-        SetRandomSeed();
-    }
+    return s;
+}
+
+void setupCommon()
+{
+    SetRandomSeed();
 }

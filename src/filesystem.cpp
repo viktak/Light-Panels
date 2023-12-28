@@ -2,15 +2,10 @@
 
 #define FORMAT_SPIFFS_IF_FAILED true
 
-namespace filesystem
+void setupFileSystem()
 {
-
-    void setup()
+    if (!LittleFS.begin())
     {
-        if (!LittleFS.begin())
-        {
-            Serial.println("Error: Failed to initialize the filesystem!");
-        }
+        Serial.println("Error: Failed to initialize the filesystem!");
     }
-
 }

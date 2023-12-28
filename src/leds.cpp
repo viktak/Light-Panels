@@ -1,7 +1,6 @@
 #include <Esp.h>
 
-namespace leds
-{
+
 #define CONNECTION_STATUS_LED_GPIO 0
 
     void connectionLED_TOGGLE()
@@ -22,10 +21,10 @@ namespace leds
         digitalWrite(CONNECTION_STATUS_LED_GPIO, HIGH);
     }
 
-    void setup()
+    void setupLEDS()
     {
         pinMode(CONNECTION_STATUS_LED_GPIO, OUTPUT);
         digitalWrite(CONNECTION_STATUS_LED_GPIO, HIGH);
     }
 
-}
+

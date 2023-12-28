@@ -6,7 +6,6 @@
 
 #include "common.h"
 #include "settings.h"
-#include "logger.h"
 
 #define DEFAULT_TIMEZONE 13
 
@@ -38,7 +37,7 @@ namespace settings
     bool LoadSettings()
     {
 
-        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
+        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, GetDeviceMAC().substring(6).c_str());
 
         File configFile = LittleFS.open("/config.json", "r");
         if (!configFile)
@@ -84,7 +83,7 @@ namespace settings
         }
         else
         {
-            sprintf(wifiSSID, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
+            sprintf(wifiSSID, "%s-%s", DEFAULT_MQTT_TOPIC, GetDeviceMAC().substring(6).c_str());
         }
 
         if (doc["password"])
@@ -139,7 +138,7 @@ namespace settings
         if (strcmp(localHost, mqttTopic) != 0)
         {
             char mac[7];
-            strcpy(mac, common::GetDeviceMAC().substring(6).c_str());
+            strcpy(mac, GetDeviceMAC().substring(6).c_str());
 
             char topic[sizeof(localHost) + sizeof(mac) + 1];
             for (size_t i = 0; i < sizeof(topic); i++)
@@ -177,7 +176,7 @@ namespace settings
 
     bool SaveSettings()
     {
-        StaticJsonDocument<256> doc;
+        StaticJsonDocument<384> doc;
 
         doc["ssid"] = wifiSSID;
         doc["password"] = wifiPassword;
@@ -214,7 +213,7 @@ namespace settings
 
     void DefaultSettings()
     {
-        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, common::GetDeviceMAC().substring(6).c_str());
+        sprintf(localHost, "%s-%s", DEFAULT_MQTT_TOPIC, GetDeviceMAC().substring(6).c_str());
 
         strcpy(wifiSSID, localHost);
         strcpy(wifiPassword, DEFAULT_AP_PASSWORD);

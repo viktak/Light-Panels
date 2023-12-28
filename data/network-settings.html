@@ -36,10 +36,10 @@
                             <a class="nav-link" href="/light-settings.html">Lights</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/network-settings.html">Network</a>
+                            <a class="nav-link active" href="/network-settings.html">Network</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="/tools.html">Tools</a>
+                            <a class="nav-link" href="/tools.html">Tools</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/logout">Logout</a>
@@ -48,48 +48,39 @@
                 </div>
             </div>
         </nav>
-
         <div class="mt-6 p-3 bg-primary text-white rounded">
             <h1>Nanoleaf panels</h1>
-            <h2>Tools</h2>
+            <h2>Network Settings</h2>
         </div>
         <br />
-        <div class="container-fluid overflow-hidden">
-            <div class="row gy-3">
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                    <div class="col">
-                        <a href="/update" class="btn btn-primary btn-lg" role="button">Upload new firmware</a>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="dropdown dropend">
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                            Restart
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/reboot">keeping all settings</a></li>
-                            <li><a class="dropdown-item" href="/reset">resetting all settings to factory defaults</a></li>
-                        </ul>
-                    </div>
-                </div>
 
-                <div class="col-12">
+        <form class="form-horizontal" method="post">
+            <div class="mb-3 row">
+                <label for="lstNetworks" class="col-sm-2 col-form-label">Select a WiFi network:</label>
+                <div class="col-sm-10">
+                    <select class="form-select" id="lstNetworks" name="lstNetworks">
+                        %networklist%
+                    </select>
                 </div>
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                </div>
-
-
             </div>
-        </div>
 
+            <div class="mb-3 row">
+                <label for="txtPassword" class="col-sm-2 col-form-label">Password:</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="txtPassword" placeholder="Enter a password"
+                        name="txtPassword" value="%password%">
+                </div>
+            </div>
+
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <input type="submit" class="btn btn-success" value="Save & reboot"
+                    onclick="javascript: alert('The system is now restarting. Please wait for a few seconds, then refresh this page.')" />
+            </div>
+
+
+
+        </form>
         <small class='well well-sm'>
             (c)2023 Viktor Takacs - <a href='https://diy.viktak.com' target='_blank'>diy.viktak.com</a>
         </small>

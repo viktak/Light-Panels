@@ -4,166 +4,163 @@
 
 #include "version.h"
 #include "settings.h"
-#include "network.h"
 #include "common.h"
-#include "logger.h"
+#include "TimeChangeRules.h"
 
-#define MQTT_CUSTOMER "viktak"
-#define MQTT_PROJECT "spiti"
+bool needsHeartbeat = false;
+os_timer_t heartbeatTimer;
 
-namespace mqtt
+WiFiClient client;
+
+PubSubClient PSclient(client);
+
+const char *mqttCustomer = MQTT_CUSTOMER;
+const char *mqttProject = MQTT_PROJECT;
+
+void heartbeatTimerCallback(void *pArg)
 {
-    bool needsHeartbeat = false;
-    os_timer_t heartbeatTimer;
+    needsHeartbeat = true;
+}
 
-    PubSubClient PSclient(network::client);
-
-    const char *mqttCustomer = MQTT_CUSTOMER;
-    const char *mqttProject = MQTT_PROJECT;
-
-    void heartbeatTimerCallback(void *pArg)
+void ConnectToMQTTBroker()
+{
+    if (!PSclient.connected())
     {
-        needsHeartbeat = true;
-    }
-
-    void ConnectToMQTTBroker()
-    {
-        if (!PSclient.connected())
+#ifdef __debugSettings
+        Serial.printf("Connecting to MQTT broker %s... ", settings::mqttServer);
+#endif
+        if (PSclient.connect(settings::localHost, (mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/STATE").c_str(), 0, true, "offline"))
         {
 #ifdef __debugSettings
-            Serial.printf("Connecting to MQTT broker %s... ", settings::mqttServer);
+            Serial.println(" success.");
 #endif
-            if (PSclient.connect(settings::localHost, (mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/STATE").c_str(), 0, true, "offline"))
-            {
-#ifdef __debugSettings
-                Serial.println(" success.");
-#endif
-                PSclient.subscribe((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/cmnd").c_str(), 0);
-                PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/STATE").c_str(), "online", true);
+            PSclient.subscribe((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/cmnd").c_str(), 0);
+            PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/STATE").c_str(), "online", true);
 
-                PSclient.setBufferSize(1024 * 5);
-            }
-            else
-            {
-#ifdef __debugSettings
-                Serial.println(" failure!");
-#endif
-            }
+            PSclient.setBufferSize(1024 * 5);
         }
-    }
-
-    void PublishData(const char *topic, const char *payload, bool retained)
-    {
-        ConnectToMQTTBroker();
-
-        if (PSclient.connected())
+        else
         {
-            PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + String("/") + topic).c_str(), payload, retained);
+#ifdef __debugSettings
+            Serial.println(" failure!");
+#endif
         }
     }
+}
 
-    void SendHeartbeat()
+void PublishData(const char *topic, const char *payload, bool retained)
+{
+    ConnectToMQTTBroker();
+
+    if (PSclient.connected())
     {
+        PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + String("/") + topic).c_str(), payload, retained);
+    }
+}
 
-        StaticJsonDocument<768> doc;
+void SendHeartbeat()
+{
 
-        JsonObject sysDetails = doc.createNestedObject("System");
-        sysDetails["ChipID"] = (String)ESP.getChipId();
+    StaticJsonDocument<768> doc;
 
-        sysDetails["Time"] = common::GetFullDateTime("%F %T", size_t(20));
-        sysDetails["Node"] = settings::localHost;
-        sysDetails["Freeheap"] = ESP.getFreeHeap();
+    JsonObject sysDetails = doc.createNestedObject("System");
+    sysDetails["ChipID"] = (String)ESP.getChipId();
 
-        sysDetails["HardwareID"] = common::HARDWARE_ID;
-        sysDetails["HardwareVersion"] = common::HARDWARE_VERSION;
-        sysDetails["FirmwareID"] = common::FIRMWARE_ID;
-        sysDetails["FirmwareVersion"] = FIRMWARE_VERSION;
-        sysDetails["UpTime"] = common::TimeIntervalToString(millis() / 1000);
-        sysDetails["CPU0_ResetReason"] = ESP.getResetReason();
+    TimeChangeRule *tcr;
+    time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
+    sysDetails["Time"] = DateTimeToString(localTime);
 
-        sysDetails["FriendlyName"] = settings::nodeFriendlyName;
-        sysDetails["TIMEZONE"] = settings::timeZone;
+    sysDetails["Node"] = settings::localHost;
+    sysDetails["Freeheap"] = ESP.getFreeHeap();
 
-        JsonObject mqttDetails = doc.createNestedObject("MQTT");
+    sysDetails["HardwareID"] = HARDWARE_ID;
+    sysDetails["HardwareVersion"] = HARDWARE_VERSION;
+    sysDetails["FirmwareID"] = FIRMWARE_ID;
+    sysDetails["FirmwareVersion"] = FIRMWARE_VERSION;
+    sysDetails["UpTime"] = TimeIntervalToString(millis() / 1000);
+    sysDetails["CPU0_ResetReason"] = ESP.getResetReason();
 
-        mqttDetails["MQTT_SERVER"] = settings::mqttServer;
-        mqttDetails["MQTT_PORT"] = settings::mqttPort;
-        mqttDetails["MQTT_TOPIC"] = settings::mqttTopic;
+    sysDetails["FriendlyName"] = settings::nodeFriendlyName;
+    sysDetails["TIMEZONE"] = settings::timeZone;
 
-        JsonObject wifiDetails = doc.createNestedObject("WiFi");
-        wifiDetails["APP_NAME"] = settings::localHost;
-        wifiDetails["SSID"] = settings::wifiSSID;
-        wifiDetails["Channel"] = WiFi.channel();
-        wifiDetails["IP_Address"] = WiFi.localIP().toString();
-        wifiDetails["MAC_Address"] = WiFi.macAddress();
+    JsonObject mqttDetails = doc.createNestedObject("MQTT");
 
-        String myJsonString;
+    mqttDetails["MQTT_SERVER"] = settings::mqttServer;
+    mqttDetails["MQTT_PORT"] = settings::mqttPort;
+    mqttDetails["MQTT_TOPIC"] = settings::mqttTopic;
 
-        serializeJson(doc, myJsonString);
+    JsonObject wifiDetails = doc.createNestedObject("WiFi");
+    wifiDetails["APP_NAME"] = settings::localHost;
+    wifiDetails["SSID"] = settings::wifiSSID;
+    wifiDetails["Channel"] = WiFi.channel();
+    wifiDetails["IP_Address"] = WiFi.localIP().toString();
+    wifiDetails["MAC_Address"] = WiFi.macAddress();
+
+    String myJsonString;
+
+    serializeJson(doc, myJsonString);
 
 #ifdef __debugSettings
-        serializeJsonPretty(doc, Serial);
-        Serial.println();
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
 #endif
 
-        ConnectToMQTTBroker();
+    ConnectToMQTTBroker();
 
-        if (PSclient.connected())
-        {
-            PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/HEARTBEAT").c_str(), myJsonString.c_str(), false);
+    if (PSclient.connected())
+    {
+        PSclient.publish((mqttCustomer + String("/") + mqttProject + String("/") + settings::mqttTopic + "/HEARTBEAT").c_str(), myJsonString.c_str(), false);
 #ifdef __debugSettings
-            Serial.println("Heartbeat sent.");
+        Serial.println("Heartbeat sent.");
 #endif
-            mqtt::needsHeartbeat = false;
-        }
+        needsHeartbeat = false;
     }
+}
 
-    void mqttCallback(char *topic, byte *payload, unsigned int len)
-    {
-        const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(14) + 300;
+void mqttCallback(char *topic, byte *payload, unsigned int len)
+{
+    const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(14) + 300;
 
-        DynamicJsonDocument doc(capacity);
-        deserializeJson(doc, payload);
+    DynamicJsonDocument doc(capacity);
+    deserializeJson(doc, payload);
 
 #ifdef __debugSettings
-        Serial.print("Message arrived in topic [");
-        Serial.print(topic);
-        Serial.println("]: ");
+    Serial.print("Message arrived in topic [");
+    Serial.print(topic);
+    Serial.println("]: ");
 
-        serializeJsonPretty(doc, Serial);
-        Serial.println();
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
 #endif
 
-        const char *command = doc["command"];
-        if (!strcmp(command, "ListSDCardFiles"))
-        {
-            // SendFileList();
-        }
-        else if (!strcmp(command, "SetSettings"))
-        {
-            // ChangeSettings_JSON(doc.getMember("params"));
-        }
-        else if (!strcmp(command, "ResetAllSettingsToDefault"))
-        {
-            settings::DefaultSettings();
-            logger::LogEvent(logger::EVENTCATEGORIES::Reboot, 1, "Reset", "");
-            ESP.restart();
-        }
-    }
-
-    void setup()
+    const char *command = doc["command"];
+    if (!strcmp(command, "ListSDCardFiles"))
     {
-        PSclient.setServer(settings::mqttServer, settings::mqttPort);
-        PSclient.setCallback(mqttCallback);
-
-        os_timer_setfn(&heartbeatTimer, heartbeatTimerCallback, NULL);
-        os_timer_arm(&heartbeatTimer, settings::heartbeatInterval * 1000, true);
+        // SendFileList();
     }
-
-    void loop()
+    else if (!strcmp(command, "SetSettings"))
     {
-        ConnectToMQTTBroker();
-        if (PSclient.connected())
-            PSclient.loop();
+        // ChangeSettings_JSON(doc.getMember("params"));
     }
+    else if (!strcmp(command, "ResetAllSettingsToDefault"))
+    {
+        settings::DefaultSettings();
+        ESP.restart();
+    }
+}
+
+void setupMqtt()
+{
+    PSclient.setServer(settings::mqttServer, settings::mqttPort);
+    PSclient.setCallback(mqttCallback);
+
+    os_timer_setfn(&heartbeatTimer, heartbeatTimerCallback, NULL);
+    os_timer_arm(&heartbeatTimer, settings::heartbeatInterval * 1000, true);
+}
+
+void loopMqtt()
+{
+    ConnectToMQTTBroker();
+    if (PSclient.connected())
+        PSclient.loop();
 }

@@ -18,7 +18,6 @@
 
 <body>
     <div class="container-fluid">
-
         <nav class="navbar navbar-expand-lg bg-light">
             <div class="container-fluid">
                 <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse"
@@ -33,13 +32,13 @@
                             <a class="nav-link" href="/general-settings.html">General</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/light-settings.html">Lights</a>
+                            <a class="nav-link active" href="/light-settings.html">Lights</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/network-settings.html">Network</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="/tools.html">Tools</a>
+                            <a class="nav-link" href="/tools.html">Tools</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/logout">Logout</a>
@@ -48,48 +47,49 @@
                 </div>
             </div>
         </nav>
-
         <div class="mt-6 p-3 bg-primary text-white rounded">
             <h1>Nanoleaf panels</h1>
-            <h2>Tools</h2>
+            <h2>Light Settings</h2>
         </div>
         <br />
-        <div class="container-fluid overflow-hidden">
-            <div class="row gy-3">
-                <div class="col-12">
+        <form class="form-horizontal form-check" method="post">
+            <fieldset class="form-group border p-2">
+                <legend class="float-none w-auto px-3">Light effects</legend>
+                <div class="form-check">
+                    <label class="form-check-label" for="optChaser">
+                        <input type="radio" class="form-check-input" id="optChaser" name="optLightEffects" value="0"
+                            %optChaser%>LED chaser
+                    </label>
                 </div>
-                <div class="col-12">
-                    <div class="col">
-                        <a href="/update" class="btn btn-primary btn-lg" role="button">Upload new firmware</a>
-                    </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="optSlowPanels"><input type="radio" class="form-check-input"
+                            id="optSlowPanels" name="optLightEffects" value="1" %optSlowPanels%>Slow panels
+                    </label>
                 </div>
-                <div class="col-12">
-                    <div class="dropdown dropend">
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                            Restart
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/reboot">keeping all settings</a></li>
-                            <li><a class="dropdown-item" href="/reset">resetting all settings to factory defaults</a></li>
-                        </ul>
-                    </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="optFastRandomSegments"><input type="radio"
+                            class="form-check-input" id="optFastRandomSegments" name="optLightEffects" value="2"
+                            %optFastRandomSegments%>Fast changing random segments
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="optRotatingPanels"><input type="radio" class="form-check-input"
+                            id="optRotatingPanels" name="optLightEffects" value="3" %optRotatingPanels%>Rotating
+                        panels
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="optRotatingPanelsInverted"><input type="radio"
+                            class="form-check-input" id="optRotatingPanelsInverted" name="optLightEffects" value="4"
+                            %optRotatingPanelsInverted%>Rotating panels (inverted)
+                    </label>
                 </div>
 
-                <div class="col-12">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <input type='submit' class='btn btn-success' value='Save'>
                 </div>
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                </div>
-                <div class="col-12">
-                </div>
-
-
-            </div>
-        </div>
-
+            </fieldset>
+        </form>
         <small class='well well-sm'>
             (c)2023 Viktor Takacs - <a href='https://diy.viktak.com' target='_blank'>diy.viktak.com</a>
         </small>

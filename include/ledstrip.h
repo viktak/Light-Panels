@@ -1,12 +1,9 @@
 #ifndef LEDSTRIP_H
 #define LEDSTRIP_H
 
-namespace ledstrip
-{
-    extern void StopAnimations();
+extern void StopAnimations();
 
-    extern void setup();
-    extern void loop();
-}
+extern void setupLedStrip();
+extern void loopLedStrip();
 
 #endif

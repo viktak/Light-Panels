@@ -1,9 +1,7 @@
 #ifndef BUTTONS_H
 #define BUTTONS_H
 
-namespace buttons{
-    extern void setup();
-    extern void loop();
-}
+    extern void setupButtons();
+    extern void loopButtons();
 
 #endif
