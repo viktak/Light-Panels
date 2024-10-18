@@ -25,49 +25,9 @@ void SetRandomSeed()
     randomSeed(seed);
 }
 
-String DateTimeToString(const time_t time)
+void DateTimeToString(char *dest, time_t localTime)
 {
-
-    String myTime = "";
-    char s[2];
-
-    //  years
-    itoa(year(time), s, DEC);
-    myTime += s;
-    myTime += "-";
-
-    //  months
-    itoa(month(time), s, DEC);
-    myTime += s;
-    myTime += "-";
-
-    //  days
-    itoa(day(time), s, DEC);
-    myTime += s;
-
-    myTime += " ";
-
-    //  hours
-    itoa(hour(time), s, DEC);
-    myTime += s;
-    myTime += ":";
-
-    //  minutes
-    if (minute(time) < 10)
-        myTime += "0";
-
-    itoa(minute(time), s, DEC);
-    myTime += s;
-    myTime += ":";
-
-    //  seconds
-    if (second(time) < 10)
-        myTime += "0";
-
-    itoa(second(time), s, DEC);
-    myTime += s;
-
-    return myTime;
+    sprintf(dest, "%u-%02u-%02u %02u:%02u:%02u", year(localTime), month(localTime), day(localTime), hour(localTime), minute(localTime), second(localTime));
 }
 
 String TimeIntervalToString(const time_t time)

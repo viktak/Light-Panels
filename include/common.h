@@ -13,7 +13,7 @@ static const String HARDWARE_VERSION = "1.0";
 static const String FIRMWARE_ID = "lp-triangle";
 
 extern String GetDeviceMAC();
-extern String DateTimeToString(const time_t time);
+extern void DateTimeToString(char *dest, time_t localTime);
 extern String TimeIntervalToString(const time_t time);
 extern String GetDeviceMAC();
 

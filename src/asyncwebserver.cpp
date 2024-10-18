@@ -77,8 +77,12 @@ String StatusTemplateProcessor(const String &var)
     if (var == "currenttime")
     {
         TimeChangeRule *tcr;
+
         time_t localTime = timechangerules::timezones[settings::timeZone]->toLocal(now(), &tcr);
-        return DateTimeToString(localTime);
+        char myDate[20];
+        DateTimeToString(myDate, localTime);
+
+        return myDate;
     }
     if (var == "uptime")
         return TimeIntervalToString(millis() / 1000);
