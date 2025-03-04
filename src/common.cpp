@@ -5,8 +5,6 @@
 #include "timechangerules.h"
 #include "settings.h"
 
-TimeChangeRule *tcr;
-
 void SetRandomSeed()
 {
     uint32_t seed;
@@ -32,30 +30,9 @@ void DateTimeToString(char *dest, time_t localTime)
 
 String TimeIntervalToString(const time_t time)
 {
-
-    String myTime = "";
-    char s[2];
-
-    //  hours
-    itoa((time / 3600), s, DEC);
-    myTime += s;
-    myTime += ":";
-
-    //  minutes
-    if (minute(time) < 10)
-        myTime += "0";
-
-    itoa(minute(time), s, DEC);
-    myTime += s;
-    myTime += ":";
-
-    //  seconds
-    if (second(time) < 10)
-        myTime += "0";
-
-    itoa(second(time), s, DEC);
-    myTime += s;
-    return myTime;
+    char tmp[10];
+    sprintf(tmp, "%02u:%02u:%02u", uint32_t(time / 3600), minute(time), second(time));
+    return (String)tmp;
 }
 
 String GetDeviceMAC()
